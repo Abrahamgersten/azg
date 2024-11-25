@@ -14,7 +14,7 @@ body {
     max-width: 900px;
     margin: 0 auto;
     padding: 20px;
-    background-color: rgba(255, 255, 255, 0.6); /* רקע חצי שקוף */
+    background-color: rgba(255, 255, 255, 0.7); /* שינוי הערך ל-0.7 עבור 30% שקיפות */
     border-radius: 10px;
 }
 
@@ -95,6 +95,7 @@ main h3 {
     margin: 0 auto;
     border: 1px solid #bdc3c7;
     border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.7); /* הוספת רקע לבן חצי שקוף */
 }
 
 .styled-select::after {
