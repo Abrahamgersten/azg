@@ -7,6 +7,7 @@ const urlsToCache = [
     './manifest.json',
     './icon-192x192.png',
     './icon-512x512.png',
+    './background.jpg',
     'https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap'
 ];
 
