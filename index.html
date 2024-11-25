@@ -30,13 +30,16 @@
 
             <section class="filter-section">
                 <h3>סינון הודיות לפי קטגוריה</h3>
-                <select id="category-filter" class="category-filter">
-                    <option value="הכל">הכל</option>
-                    <option value="הודיה על דברים קטנים בחיים">הודיה על דברים קטנים בחיים</option>
-                    <option value="הודיה על דברים גדולים ומשמעותיים בחיים">הודיה על דברים גדולים ומשמעותיים בחיים</option>
-                    <option value="הודיה על דברים קשים">הודיה על דברים קשים</option>
-                    <option value="הודיה על דברים מהשגרה היומית">הודיה על דברים מהשגרה היומית</option>
-                </select>
+                <div class="styled-select">
+                    <select id="category-filter" class="category-filter">
+                        <option value="הכל">הכל</option>
+                        <option value="הודיות שכתבתי היום">הודיות שכתבתי היום</option> <!-- אפשרות חדשה -->
+                        <option value="הודיה על דברים קטנים בחיים">הודיה על דברים קטנים בחיים</option>
+                        <option value="הודיה על דברים גדולים ומשמעותיים בחיים">הודיה על דברים גדולים ומשמעותיים בחיים</option>
+                        <option value="הודיה על דברים קשים">הודיה על דברים קשים</option>
+                        <option value="הודיה על דברים מהשגרה היומית">הודיה על דברים מהשגרה היומית</option>
+                    </select>
+                </div>
                 <ul id="filtered-entries" class="filtered-entries">
                     <!-- תוצאות הסינון יתווספו כאן -->
                 </ul>
