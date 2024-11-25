@@ -1,7 +1,11 @@
+/* עיצוב כללי */
 body {
     margin: 0;
     font-family: 'Rubik', sans-serif;
-    background-color: #f0f4f8;
+    background-image: url('background.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
     color: #333;
     direction: rtl;
 }
@@ -10,6 +14,8 @@ body {
     max-width: 900px;
     margin: 0 auto;
     padding: 20px;
+    background-color: rgba(255, 255, 255, 0.9); /* רקע חצי שקוף */
+    border-radius: 10px;
 }
 
 header {
@@ -61,6 +67,7 @@ main h3 {
     font-size: 16px;
     transition: border-color 0.3s;
     box-sizing: border-box;
+    text-align: right; /* יישור הטקסט לימין */
 }
 
 .entry-input:focus {
@@ -69,16 +76,48 @@ main h3 {
 }
 
 .category-select {
-    padding: 8px;
-    border: 1px solid #bdc3c7;
-    border-radius: 4px;
+    width: 100%;
+    padding: 10px;
+    border: none;
     font-size: 16px;
-    transition: border-color 0.3s;
+    appearance: none;
+    outline: none;
+    background-color: transparent;
+    cursor: pointer;
+    position: relative;
+    direction: rtl; /* תמיכה בכיוון RTL */
 }
 
-.category-select:focus {
-    border-color: #3498db;
+.styled-select {
+    position: relative;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+}
+
+.styled-select::after {
+    content: '▼';
+    position: absolute;
+    top: 50%;
+    left: 10px; /* שינוי מ-right ל-left */
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #7f8c8d;
+}
+
+.styled-select select {
+    width: 100%;
+    padding: 10px;
+    padding-left: 30px; /* הוספת ריווח משמאל */
+    border: none;
+    font-size: 16px;
+    appearance: none;
     outline: none;
+    background-color: transparent;
+    text-align: right; /* יישור הטקסט לימין */
+    direction: rtl; /* תמיכה בכיוון RTL */
 }
 
 .primary-button, .secondary-button {
@@ -290,11 +329,4 @@ main h3 {
     .modal-content {
         padding: 20px;
     }
-}
-
-/* עיצוב משופר */
-body {
-    background-image: url('background.jpg');
-    background-size: cover;
-    background-attachment: fixed;
 }
