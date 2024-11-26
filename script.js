@@ -1,3 +1,19 @@
+/* script.js */
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+            .then(registration => {
+                console.log('Service Worker registered with scope:', registration.scope);
+            })
+            .catch(error => {
+                console.log('Service Worker registration failed:', error);
+            });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    // ... שאר הקוד הקיים שלך ...
+});
 document.addEventListener('DOMContentLoaded', function () {
     const entriesContainer = document.getElementById('entries');
     const saveButton = document.getElementById('save-button');
