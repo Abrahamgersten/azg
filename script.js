@@ -1,4 +1,4 @@
-/* script.js */
+// רישום Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')
@@ -11,9 +11,6 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    // ... שאר הקוד הקיים שלך ...
-});
 document.addEventListener('DOMContentLoaded', function () {
     const entriesContainer = document.getElementById('entries');
     const saveButton = document.getElementById('save-button');
@@ -33,6 +30,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const didYouKnowCarousel = document.getElementById('did-you-know-carousel');
     const categoryFilter = document.getElementById('category-filter');
     const filteredEntriesContainer = document.getElementById('filtered-entries');
+
+    const reminderSettingsContainer = document.getElementById('reminder-settings');
 
     // קטעי הידעת (10 קטעים)
     const didYouKnowFacts = [
@@ -356,8 +355,140 @@ document.addEventListener('DOMContentLoaded', function () {
         loadPreviousDays();
         displayDidYouKnow();
         applyCategoryFilter();
+        setupReminderSettings(); // קריאה לפונקציה להגדרת תזכורות
     }
 
     initializeApp();
     saveButton.addEventListener('click', saveEntries);
+
+    // הגדרת ממשק התזכורות
+    function setupReminderSettings() {
+        if (!('Notification' in window && navigator.serviceWorker)) {
+            return;
+        }
+
+        const savedReminders = JSON.parse(localStorage.getItem('reminders')) || [];
+
+        reminderSettingsContainer.innerHTML = '';
+
+        const instructions = document.createElement('p');
+        instructions.textContent = 'בחר את הזמנים שבהם תרצה לקבל תזכורות לכתיבת ההודיות שלך.';
+        reminderSettingsContainer.appendChild(instructions);
+
+        const reminderTimesContainer = document.createElement('div');
+        reminderTimesContainer.id = 'reminder-times-container';
+        reminderSettingsContainer.appendChild(reminderTimesContainer);
+
+        function addReminderInput(time = '') {
+            const reminderDiv = document.createElement('div');
+            reminderDiv.className = 'reminder-time-input';
+
+            const timeInput = document.createElement('input');
+            timeInput.type = 'time';
+            timeInput.value = time;
+            reminderDiv.appendChild(timeInput);
+
+            const removeButton = document.createElement('button');
+            removeButton.textContent = 'הסר';
+            removeButton.className = 'remove-reminder-button';
+            removeButton.addEventListener('click', () => {
+                reminderDiv.remove();
+            });
+            reminderDiv.appendChild(removeButton);
+
+            reminderTimesContainer.appendChild(reminderDiv);
+        }
+
+        savedReminders.forEach(time => {
+            addReminderInput(time);
+        });
+
+        const addButton = document.createElement('button');
+        addButton.textContent = 'הוסף תזכורת';
+        addButton.className = 'add-reminder-button';
+        addButton.addEventListener('click', () => {
+            if (reminderTimesContainer.children.length < 4) {
+                addReminderInput();
+            } else {
+                alert('ניתן להוסיף עד 4 תזכורות בלבד.');
+            }
+        });
+        reminderSettingsContainer.appendChild(addButton);
+
+        const saveRemindersButton = document.createElement('button');
+        saveRemindersButton.textContent = 'שמור תזכורות';
+        saveRemindersButton.className = 'primary-button';
+        saveRemindersButton.addEventListener('click', saveReminders);
+        reminderSettingsContainer.appendChild(saveRemindersButton);
+    }
+
+    function saveReminders() {
+        if (Notification.permission === 'default') {
+            Notification.requestPermission().then(permission => {
+                if (permission !== 'granted') {
+                    alert('לא ניתנה הרשאה לשליחת תזכורות.');
+                    return;
+                } else {
+                    scheduleReminders();
+                }
+            });
+        } else if (Notification.permission === 'granted') {
+            scheduleReminders();
+        } else {
+            alert('הרשאות ההתראות נדחו בעבר. אנא אפשר אותן מהגדרות הדפדפן.');
+        }
+    }
+
+    function scheduleReminders() {
+        const times = Array.from(document.querySelectorAll('.reminder-time-input input[type="time"]'))
+            .map(input => input.value)
+            .filter(time => time);
+
+        if (times.length === 0) {
+            alert('אנא הוסף לפחות תזכורת אחת.');
+            return;
+        }
+
+        localStorage.setItem('reminders', JSON.stringify(times));
+
+        navigator.serviceWorker.ready.then(registration => {
+            registration.getRegistrations().then(registrations => {
+                registrations.forEach(reg => {
+                    reg.unregister();
+                });
+
+                navigator.serviceWorker.register('sw.js').then(() => {
+                    times.forEach(time => {
+                        scheduleNotification(time);
+                    });
+                    alert('התזכורות נשמרו בהצלחה!');
+                });
+            });
+        });
+    }
+
+    function scheduleNotification(time) {
+        const [hour, minute] = time.split(':').map(Number);
+        const now = new Date();
+        let notificationTime = new Date();
+        notificationTime.setHours(hour, minute, 0, 0);
+
+        if (notificationTime <= now) {
+            notificationTime.setDate(notificationTime.getDate() + 1);
+        }
+
+        const delay = notificationTime.getTime() - now.getTime();
+
+        setTimeout(() => {
+            navigator.serviceWorker.ready.then(registration => {
+                registration.showNotification('תזכורת: הודית כבר היום?', {
+                    body: 'אל תשכח לכתוב את ההודיות שלך להיום!',
+                    icon: './icon-192x192.png',
+                    tag: 'daily-reminder',
+                });
+            });
+
+            scheduleNotification(time); // תזמון מחדש למחר
+        }, delay);
+    }
 });
