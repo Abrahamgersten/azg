@@ -356,6 +356,7 @@ document.addEventListener('DOMContentLoaded', function () {
         displayDidYouKnow();
         applyCategoryFilter();
         setupReminderSettings(); // קריאה לפונקציה להגדרת תזכורות
+        initializeReminders(); // אתחול התזכורות
     }
 
     initializeApp();
@@ -422,57 +423,56 @@ document.addEventListener('DOMContentLoaded', function () {
         reminderSettingsContainer.appendChild(saveRemindersButton);
     }
 
-    function saveReminders() {
+    // בקשת הרשאה להתראות
+    function requestNotificationPermission() {
         if (Notification.permission === 'default') {
-            Notification.requestPermission().then(permission => {
-                if (permission !== 'granted') {
-                    alert('לא ניתנה הרשאה לשליחת תזכורות.');
-                    return;
-                } else {
-                    scheduleReminders();
-                }
-            });
-        } else if (Notification.permission === 'granted') {
-            scheduleReminders();
-        } else {
-            alert('הרשאות ההתראות נדחו בעבר. אנא אפשר אותן מהגדרות הדפדפן.');
+            return Notification.requestPermission();
         }
+        return Promise.resolve(Notification.permission);
     }
 
-    function scheduleReminders() {
-        const times = Array.from(document.querySelectorAll('.reminder-time-input input[type="time"]'))
-            .map(input => input.value)
-            .filter(time => time);
+    // שמירת התזכורות
+    function saveReminders() {
+        requestNotificationPermission().then(permission => {
+            if (permission !== 'granted') {
+                alert('לא ניתנה הרשאה לשליחת תזכורות.');
+                return;
+            }
 
-        if (times.length === 0) {
-            alert('אנא הוסף לפחות תזכורת אחת.');
-            return;
-        }
+            const times = Array.from(document.querySelectorAll('.reminder-time-input input[type="time"]'))
+                .map(input => input.value)
+                .filter(time => time);
 
-        localStorage.setItem('reminders', JSON.stringify(times));
+            if (times.length === 0) {
+                alert('אנא הוסף לפחות תזכורת אחת.');
+                return;
+            }
 
-        navigator.serviceWorker.ready.then(registration => {
-            registration.getRegistrations().then(registrations => {
-                registrations.forEach(reg => {
-                    reg.unregister();
-                });
+            localStorage.setItem('reminders', JSON.stringify(times));
+            alert('התזכורות נשמרו בהצלחה!');
 
-                navigator.serviceWorker.register('sw.js').then(() => {
-                    times.forEach(time => {
-                        scheduleNotification(time);
-                    });
-                    alert('התזכורות נשמרו בהצלחה!');
+            // תזמון התזכורות
+            navigator.serviceWorker.ready.then(registration => {
+                // ביטול תזכורות קיימות
+                if ('clearAll' in registration.periodicSync) {
+                    registration.periodicSync.clearAll();
+                }
+
+                times.forEach(time => {
+                    scheduleNotification(registration, time);
                 });
             });
         });
     }
 
-    function scheduleNotification(time) {
+    // תזמון התראות
+    function scheduleNotification(registration, time) {
         const [hour, minute] = time.split(':').map(Number);
         const now = new Date();
         let notificationTime = new Date();
         notificationTime.setHours(hour, minute, 0, 0);
 
+        // אם השעה עברה, תזמן למחר
         if (notificationTime <= now) {
             notificationTime.setDate(notificationTime.getDate() + 1);
         }
@@ -480,15 +480,28 @@ document.addEventListener('DOMContentLoaded', function () {
         const delay = notificationTime.getTime() - now.getTime();
 
         setTimeout(() => {
-            navigator.serviceWorker.ready.then(registration => {
-                registration.showNotification('תזכורת: הודית כבר היום?', {
-                    body: 'אל תשכח לכתוב את ההודיות שלך להיום!',
-                    icon: './icon-192x192.png',
-                    tag: 'daily-reminder',
-                });
+            registration.showNotification('תזכורת: הודית כבר היום?', {
+                body: 'אל תשכח לכתוב את ההודיות שלך להיום!',
+                icon: './icon-192x192.png',
+                tag: `daily-reminder-${time}`,
             });
 
-            scheduleNotification(time); // תזמון מחדש למחר
+            // תזמון חוזר למחר
+            scheduleNotification(registration, time);
         }, delay);
+    }
+
+    // אתחול תזכורות בעת טעינת הדף
+    function initializeReminders() {
+        if (Notification.permission !== 'granted') {
+            return;
+        }
+
+        navigator.serviceWorker.ready.then(registration => {
+            const savedReminders = JSON.parse(localStorage.getItem('reminders')) || [];
+            savedReminders.forEach(time => {
+                scheduleNotification(registration, time);
+            });
+        });
     }
 });
