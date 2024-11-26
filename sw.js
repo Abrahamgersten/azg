@@ -70,11 +70,14 @@ self.addEventListener('fetch', event => {
 // טיפול באירוע notificationclick
 self.addEventListener('notificationclick', event => {
     event.notification.close();
+
     event.waitUntil(
-        clients.matchAll({ type: 'window' }).then(clientList => {
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
             for (const client of clientList) {
-                if (client.url.includes('index.html') && 'focus' in client) {
-                    return client.focus();
+                if (client.url.includes('index.html') || client.url === self.registration.scope) {
+                    if ('focus' in client) {
+                        return client.focus();
+                    }
                 }
             }
             if (clients.openWindow) {
