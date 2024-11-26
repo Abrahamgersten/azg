@@ -1,4 +1,3 @@
-/* styles.css */
 /* עיצוב כללי */
 body {
     margin: 0;
@@ -314,6 +313,64 @@ main h3 {
     border-bottom: none;
 }
 
+/* עיצוב מקטע הגדרות התזכורות */
+.reminder-section {
+    margin-top: 40px;
+}
+
+.reminder-settings {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.reminder-time-input {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.reminder-time-input input[type="time"] {
+    margin-left: 10px;
+    padding: 5px;
+    font-size: 16px;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    outline: none;
+}
+
+.add-reminder-button {
+    background-color: #27ae60;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.add-reminder-button:hover {
+    background-color: #229954;
+    transform: translateY(-2px);
+}
+
+.remove-reminder-button {
+    background-color: #e74c3c;
+    color: white;
+    padding: 4px 8px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    margin-left: 10px;
+}
+
+.remove-reminder-button:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px);
+}
+
 /* רספונסיביות */
 @media (max-width: 768px) {
     .entries-grid {
@@ -338,4 +395,4 @@ main h3 {
     .modal-content {
         padding: 20px;
     }
-}
+    
