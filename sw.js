@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gratitude-app-v6'; // עדכון גרסת המטמון
+const CACHE_NAME = 'gratitude-app-v7';
 const urlsToCache = [
     './',
     './index.html',
@@ -8,10 +8,10 @@ const urlsToCache = [
     './icon-192x192.png',
     './icon-512x512.png',
     './background.jpg',
+    './favicon.ico',
     'https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap'
 ];
 
-// התקנה של ה-Service Worker והוספת הקבצים למטמון
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
@@ -22,7 +22,6 @@ self.addEventListener('install', event => {
     );
 });
 
-// הפעלת ה-Service Worker והסרת מטמונים ישנים
 self.addEventListener('activate', event => {
     const cacheWhitelist = [CACHE_NAME];
     event.waitUntil(
@@ -39,19 +38,15 @@ self.addEventListener('activate', event => {
     );
 });
 
-// התערבות בבקשות הרשת וניסיון להחזיר מהמטמון תחילה
 self.addEventListener('fetch', event => {
     event.respondWith(
         caches.match(event.request)
             .then(response => {
-                // אם נמצא בקאש, נחזיר אותו
                 if (response) {
                     return response;
                 }
-                // אחרת, נטען מהאינטרנט ונוסיף לקאש
                 return fetch(event.request).then(
                     fetchResponse => {
-                        // בדיקה אם הבקשה הייתה מוצלחת
                         if (!fetchResponse || fetchResponse.status !== 200 || fetchResponse.type !== 'basic') {
                             return fetchResponse;
                         }
@@ -65,7 +60,6 @@ self.addEventListener('fetch', event => {
                 );
             })
             .catch(() => {
-                // דף fallback במקרה של כשל בטעינה
                 if (event.request.mode === 'navigate') {
                     return caches.match('./index.html');
                 }
