@@ -11,12 +11,22 @@
 </head>
 <body>
     <div class="container">
+        <!-- תפריט נפתח -->
+        <nav class="dropdown-menu">
+            <button class="menu-button">☰ תפריט</button>
+            <div class="dropdown-content">
+                <a href="#" id="view-previous-thanks">תודות מימים קודמים</a>
+                <a href="#" id="set-reminders">הגדר תזכורות יומיות</a>
+                <a href="#" id="view-all-did-you-know">כל קטעי 'הידעת?'</a>
+            </div>
+        </nav>
+
         <header>
             <h1>הודו לה' כי טוב, כי לעולם חסדו</h1>
             <h2>
                 אתגרו את עצמכם להודות 30 יום ברצף!<br>
-                כתבו הודיות במהלך היום, ובערב עיצרו להתבונן ולהודות עליהם<br>
-                <span class="small-text">כתבו מדי יום הודיות בכל הקטגוריות שבתחתית ההודיות</span>
+                כתבו תודות במהלך היום, ובערב עיצרו להתבונן ולהודות עליהם<br>
+                <span class="small-text">כתבו מדי יום תודות בכל הקטגוריות שבתחתית התודות</span>
             </h2>
         </header>
         
@@ -28,20 +38,22 @@
                 </div>
                 <button id="save-button" class="primary-button">
                     <span class="button-icon">💾</span>
-                    שמור הודיות
+                    שמור תודות
                 </button>
             </section>
 
             <section class="filter-section">
-                <h3>סינון הודיות לפי קטגוריה</h3>
+                <h3>סינון תודות לפי קטגוריה</h3>
                 <div class="styled-select">
                     <select id="category-filter" class="category-filter">
                         <option value="הכל">הכל</option>
-                        <option value="הודיות שכתבתי היום">הודיות שכתבתי היום</option>
-                        <option value="הודיה על דברים קטנים בחיים">הודיה על דברים קטנים בחיים</option>
-                        <option value="הודיה על דברים גדולים ומשמעותיים בחיים">הודיה על דברים גדולים ומשמעותיים בחיים</option>
-                        <option value="הודיה על דברים קשים">הודיה על דברים קשים</option>
-                        <option value="הודיה על דברים מהשגרה היומית">הודיה על דברים מהשגרה היומית</option>
+                        <option value="תודות שכתבתי היום">תודות שכתבתי היום</option>
+                        <option value="דבר טוב שקרה לי היום">דבר טוב שקרה לי היום</option>
+                        <option value="דבר טוב שעשיתי היום">דבר טוב שעשיתי היום</option>
+                        <option value="תודה על דברים קטנים בחיים">תודה על דברים קטנים בחיים</option>
+                        <option value="תודה על דברים גדולים ומשמעותיים בחיים">תודה על דברים גדולים ומשמעותיים בחיים</option>
+                        <option value="תודה על דברים קשים">תודה על דברים קשים</option>
+                        <option value="תודה על דברים מהשגרה היומית">תודה על דברים מהשגרה היומית</option>
                     </select>
                 </div>
                 <ul id="filtered-entries" class="filtered-entries">
@@ -55,25 +67,40 @@
                     <!-- קטעי הידעת יתווספו כאן דרך JavaScript -->
                 </div>
             </section>
-
-            <section class="previous-days-section">
-                <h3>ימים קודמים</h3>
-                <div id="previous-days" class="previous-days-grid">
-                    <!-- הימים הקודמים יתווספו כאן דרך JavaScript -->
-                </div>
-            </section>
-
-            <!-- מקטע הגדרות התזכורות -->
-            <section class="reminder-section">
-                <h3>הגדר תזכורות יומיות</h3>
-                <div id="reminder-settings" class="reminder-settings">
-                    <!-- הגדרות התזכורות יתווספו כאן דרך JavaScript -->
-                </div>
-            </section>
         </main>
     </div>
 
-    <!-- מודאל לצפייה בהודעות יומיות -->
+    <!-- מודאל לצפייה בתודות מימים קודמים -->
+    <div id="previous-thanks-modal" class="modal">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h3>תודות מימים קודמים</h3>
+                <button class="close-button" aria-label="סגור">×</button>
+            </header>
+            <div class="modal-body">
+                <div id="previous-days" class="previous-days-grid">
+                    <!-- הימים הקודמים יתווספו כאן דרך JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- מודאל הגדרת תזכורות יומיות -->
+    <div id="reminder-modal" class="modal">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h3>הגדר תזכורות יומיות</h3>
+                <button class="close-button" aria-label="סגור">×</button>
+            </header>
+            <div class="modal-body">
+                <div id="reminder-settings" class="reminder-settings">
+                    <!-- הגדרות התזכורות יתווספו כאן דרך JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- מודאל לצפייה בתודות יומיות -->
     <div id="modal" class="modal">
         <div class="modal-content">
             <header class="modal-header">
@@ -86,15 +113,15 @@
         </div>
     </div>
 
-    <!-- מודאל להוספת הודיות נוספות -->
+    <!-- מודאל להוספת תודות נוספות -->
     <div id="prompt-modal" class="modal">
         <div class="modal-content">
             <header class="modal-header">
-                <h3>הוספת הודיות</h3>
+                <h3>הוספת תודות</h3>
                 <button class="close-button" aria-label="סגור">×</button>
             </header>
             <div class="modal-body">
-                <p>כתבת <span id="current-level"></span> הודיות. האם תרצה להוסיף עוד <span id="add-count"></span> הודיות?</p>
+                <p>כתבת <span id="current-level"></span> תודות. האם תרצה להוסיף עוד <span id="add-count"></span> תודות?</p>
                 <div class="modal-buttons">
                     <button id="confirm-add" class="primary-button">כן, להוסיף</button>
                     <button id="cancel-add" class="secondary-button">לא, תודה</button>
@@ -103,7 +130,22 @@
         </div>
     </div>
 
+    <!-- מודאל הצגת כל קטעי 'הידעת?' -->
+    <div id="all-did-you-know-modal" class="modal">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h3>כל קטעי 'הידעת?'</h3>
+                <button class="close-button" aria-label="סגור">×</button>
+            </header>
+            <div class="modal-body">
+                <ul id="all-did-you-know-list">
+                    <!-- כל קטעי הידעת יתווספו כאן דרך JavaScript -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
     <!-- טעינת סקריפטים -->
     <script src="script.js"></script>
 </body>
-</html>
+        </html>
