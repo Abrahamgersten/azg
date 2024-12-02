@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const entriesContainer = document.getElementById('entries');
     const saveButton = document.getElementById('save-button');
     const currentDateElement = document.getElementById('current-date');
-    const previousDaysContainer = document.getElementById('previous-days');
     const modal = document.getElementById('modal');
     const modalDate = document.getElementById('modal-date');
     const modalEntries = document.getElementById('modal-entries');
@@ -33,7 +32,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const reminderSettingsContainer = document.getElementById('reminder-settings');
 
-    // קטעי הידעת (10 קטעים)
+    const previousThanksModal = document.getElementById('previous-thanks-modal');
+    const reminderModal = document.getElementById('reminder-modal');
+    const allDidYouKnowModal = document.getElementById('all-did-you-know-modal');
+    const allDidYouKnowList = document.getElementById('all-did-you-know-list');
+
+    const viewPreviousThanksLink = document.getElementById('view-previous-thanks');
+    const setRemindersLink = document.getElementById('set-reminders');
+    const viewAllDidYouKnowLink = document.getElementById('view-all-did-you-know');
+
+    // קטעי הידעת (20 קטעים)
     const didYouKnowFacts = [
         "מחקרו של רוברט אמונס מצא כי הכרת תודה יכולה לשפר את הבריאות הנפשית ולהפחית תחושות דיכאון.",
         "מרטין סליגמן הראה שכתיבת 3 דברים טובים בכל יום מגבירה את האושר הכללי.",
@@ -42,16 +50,26 @@ document.addEventListener('DOMContentLoaded', function () {
         "תרגול של הכרת תודה מגביר את תחושת המשמעות בחיים ומסייע בהתמודדות עם אתגרים.",
         "הכרת תודה יכולה לשפר את איכות השינה שלך ולהגביר את האנרגיה היומית.",
         "מחקרים מראים שהבעת תודה מגבירה את האמפתיה ומפחיתה אגרסיביות.",
-        "תרגול הודיה מחזק את המערכת החיסונית ועשוי להוריד לחץ דם.",
+        "תרגול תודה מחזק את המערכת החיסונית ועשוי להוריד לחץ דם.",
         "אנשים שמביעים תודה הם בעלי סיכוי גבוה יותר להתנהגויות פרו-חברתיות.",
-        "הכרת תודה מסייעת בפיתוח עמידות נפשית ומסייעת להתאושש מאירועים טראומטיים."
+        "הכרת תודה מסייעת בפיתוח עמידות נפשית ומסייעת להתאושש מאירועים טראומטיים.",
+        "כתיבת יומן תודות יכולה לשפר את המודעות העצמית והרגשות החיוביים.",
+        "הכרת תודה משפרת מערכות יחסים חברתיות ומגבירה תחושת שייכות.",
+        "תרגול יומי של תודה מגביר את שביעות הרצון מהחיים.",
+        "הבעת תודה בעבודה יכולה להגדיל את הפרודוקטיביות ואת שביעות הרצון של העובדים.",
+        "הכרת תודה יכולה להפחית רגשות קנאה ולקדם נדיבות.",
+        "מחקר הראה שאנשים שמתרגלים תודה נוטים להיות פחות חומרניים.",
+        "הכרת תודה משפרת את הבריאות הקרדיווסקולרית על ידי הפחתת סטרס.",
+        "אנשים שמודים באופן קבוע חווים פחות כאבים כרוניים.",
+        "תרגול תודה משפר את היכולת לקבל החלטות מושכלות.",
+        "הכרת תודה מגבירה את התחושה של אופטימיות ותקווה לעתיד."
     ];
 
     // מפתח התאריך לשימוש ב-LocalStorage
     const today = new Date();
     const dateKey = today.toLocaleDateString('he-IL');
 
-    // רמות ההודיות המקסימליות
+    // רמות התודות המקסימליות
     const levels = [
         { max: 5, next: 10, add: 5 },
         { max: 10, next: 15, add: 5 },
@@ -73,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const input = document.createElement('input');
             input.type = 'text';
             input.className = 'entry-input';
-            input.placeholder = `הודיה ${i + 1}`;
+            input.placeholder = `תודה ${i + 1}`;
             input.value = savedEntries[i] ? savedEntries[i].text : '';
             entryContainer.appendChild(input);
 
@@ -83,10 +101,12 @@ document.addEventListener('DOMContentLoaded', function () {
             const select = document.createElement('select');
             select.className = 'category-select';
             const categories = [
-                'הודיה על דברים קטנים בחיים',
-                'הודיה על דברים גדולים ומשמעותיים בחיים',
-                'הודיה על דברים קשים',
-                'הודיה על דברים מהשגרה היומית'
+                'דבר טוב שקרה לי היום',
+                'דבר טוב שעשיתי היום',
+                'תודה על דברים קטנים בחיים',
+                'תודה על דברים גדולים ומשמעותיים בחיים',
+                'תודה על דברים קשים',
+                'תודה על דברים מהשגרה היומית'
             ];
             const defaultOption = document.createElement('option');
             defaultOption.value = '';
@@ -110,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // שמירת הודיות
+    // שמירת תודות
     function saveEntries() {
         try {
             const entryContainers = entriesContainer.getElementsByClassName('entry-container');
@@ -120,20 +140,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 return text || category ? { text, category } : null;
             });
 
-            // שמירת כל ההודיות, גם אם חלק מהשדות ריקים
+            // שמירת כל התודות, גם אם חלק מהשדות ריקים
             localStorage.setItem(dateKey, JSON.stringify(entries));
 
-            loadPreviousDays();
             checkAndPrompt(entries.filter(entry => entry && entry.text).length);
-            alert('ההודיות נשמרו בהצלחה!');
+            alert('התודות נשמרו בהצלחה!');
         } catch (error) {
-            console.error('שגיאה בשמירת ההודיות:', error);
-            alert('אירעה שגיאה בעת שמירת ההודיות. אנא נסה שוב.');
+            console.error('שגיאה בשמירת התודות:', error);
+            alert('אירעה שגיאה בעת שמירת התודות. אנא נסה שוב.');
         }
     }
 
     // טעינת ימים קודמים
     function loadPreviousDays() {
+        const previousDaysContainer = document.getElementById('previous-days');
         previousDaysContainer.innerHTML = '';
         const dates = [];
         for (let i = 0; i < localStorage.length; i++) {
@@ -160,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return !isNaN(date.getTime());
     }
 
-    // הצגת הודיות בחלון מודאל
+    // הצגת תודות בחלון מודאל
     function showEntries(date) {
         try {
             const entries = JSON.parse(localStorage.getItem(date));
@@ -170,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function () {
             entries.forEach((entry, index) => {
                 if (entry && entry.text) {
                     const li = document.createElement('li');
-                    li.innerHTML = `<strong>הודיה ${index + 1}:</strong> ${entry.text} <em>(${entry.category || 'ללא קטגוריה'})</em>`;
+                    li.innerHTML = `<strong>תודה ${index + 1}:</strong> ${entry.text} <em>(${entry.category || 'ללא קטגוריה'})</em>`;
                     modalEntries.appendChild(li);
                 }
             });
@@ -179,44 +199,39 @@ document.addEventListener('DOMContentLoaded', function () {
             // הוספת מצב להיסטוריה
             history.pushState({ modalOpen: true }, null, '');
         } catch (error) {
-            console.error('שגיאה בטעינת ההודיות:', error);
-            alert('אירעה שגיאה בעת טעינת ההודיות. אנא נסה שוב.');
+            console.error('שגיאה בטעינת התודות:', error);
+            alert('אירעה שגיאה בעת טעינת התודות. אנא נסה שוב.');
         }
     }
 
     // טיפול באירוע popstate כדי לסגור את המודאל
     window.addEventListener('popstate', (event) => {
-        if (modal.style.display === 'flex') {
-            modal.style.display = 'none';
-        } else if (promptModal.style.display === 'flex') {
-            promptModal.style.display = 'none';
-        } else {
-            // אפשר להוסיף לוגיקה נוספת כאן אם נדרש
-        }
+        closeAllModals();
     });
 
-    // סגירת המודאל והסרת המצב מההיסטוריה
-    function closeModal() {
-        if (modal.style.display === 'flex') {
-            modal.style.display = 'none';
-            history.back();
-        }
+    // סגירת כל המודאלים
+    function closeAllModals() {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            if (modal.style.display === 'flex') {
+                modal.style.display = 'none';
+            }
+        });
     }
 
     // עדכון כפתורי הסגירה להשתמש בפונקציה החדשה
     closeButtons.forEach(btn => {
         btn.addEventListener('click', () => {
-            closeModal();
+            closeAllModals();
+            history.back();
         });
     });
 
     // סגירת המודאל בלחיצה מחוץ לתוכן
     window.addEventListener('click', (event) => {
-        if (event.target === modal) {
-            closeModal();
-        }
-        if (event.target === promptModal) {
-            promptModal.style.display = 'none';
+        if (event.target.classList.contains('modal')) {
+            closeAllModals();
+            history.back();
         }
     });
 
@@ -230,17 +245,30 @@ document.addEventListener('DOMContentLoaded', function () {
         didYouKnowCarousel.appendChild(factElement);
     }
 
-    // בדיקה והצגת הודעות להוספת הודיות
+    // הצגת כל קטעי "הידעת?"
+    function displayAllDidYouKnow() {
+        allDidYouKnowList.innerHTML = '';
+        didYouKnowFacts.forEach((fact, index) => {
+            const li = document.createElement('li');
+            li.textContent = fact;
+            allDidYouKnowList.appendChild(li);
+        });
+        allDidYouKnowModal.style.display = 'flex';
+        history.pushState({ modalOpen: true }, null, '');
+    }
+
+    // בדיקה והצגת הודעות להוספת תודות
     function checkAndPrompt(currentFilledCount) {
         const level = levels.find(l => l.max === currentLevel);
         if (currentFilledCount >= currentLevel && level && level.next) {
             currentLevelSpan.textContent = currentLevel;
             addCountSpan.textContent = level.add;
             promptModal.style.display = 'flex';
+            history.pushState({ modalOpen: true }, null, '');
         }
     }
 
-    // טיפול באירועי המודאל להוספת הודיות
+    // טיפול באירועי המודאל להוספת תודות
     confirmAddButton.addEventListener('click', () => {
         const level = levels.find(l => l.max === currentLevel);
         if (level && level.next) {
@@ -248,10 +276,12 @@ document.addEventListener('DOMContentLoaded', function () {
             createInputFields(currentLevel);
         }
         promptModal.style.display = 'none';
+        history.back();
     });
 
     cancelAddButton.addEventListener('click', () => {
         promptModal.style.display = 'none';
+        history.back();
     });
 
     // הצגת היום בשבוע והתאריך העברי
@@ -294,8 +324,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const allEntries = [];
-        if (selectedCategory === 'הודיות שכתבתי היום') {
-            // הבאת ההודיות מהיום הנוכחי
+        if (selectedCategory === 'תודות שכתבתי היום') {
+            // הבאת התודות מהיום הנוכחי
             const entries = JSON.parse(localStorage.getItem(dateKey)) || [];
             entries.forEach(entry => {
                 if (entry && entry.text) {
@@ -303,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
         } else {
-            // הבאת ההודיות לפי הקטגוריה שנבחרה
+            // הבאת התודות לפי הקטגוריה שנבחרה
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
                 if (isValidDate(key)) {
@@ -319,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (allEntries.length === 0) {
             const li = document.createElement('li');
-            li.textContent = 'לא נמצאו הודיות בקטגוריה זו.';
+            li.textContent = 'לא נמצאו תודות בקטגוריה זו.';
             filteredEntriesContainer.appendChild(li);
         } else {
             allEntries.forEach(entry => {
@@ -352,10 +382,8 @@ document.addEventListener('DOMContentLoaded', function () {
             currentLevel = 5;
         }
         createInputFields(currentLevel);
-        loadPreviousDays();
         displayDidYouKnow();
         applyCategoryFilter();
-        setupReminderSettings(); // קריאה לפונקציה להגדרת תזכורות
         initializeReminders(); // אתחול התזכורות
     }
 
@@ -373,7 +401,7 @@ document.addEventListener('DOMContentLoaded', function () {
         reminderSettingsContainer.innerHTML = '';
 
         const instructions = document.createElement('p');
-        instructions.textContent = 'בחר את הזמנים שבהם תרצה לקבל תזכורות לכתיבת ההודיות שלך.';
+        instructions.textContent = 'בחר את הזמנים שבהם תרצה לקבל תזכורות לכתיבת התודות שלך.';
         reminderSettingsContainer.appendChild(instructions);
 
         const reminderTimesContainer = document.createElement('div');
@@ -452,21 +480,14 @@ document.addEventListener('DOMContentLoaded', function () {
             alert('התזכורות נשמרו בהצלחה!');
 
             // תזמון התזכורות
-            navigator.serviceWorker.ready.then(registration => {
-                // ביטול תזכורות קיימות
-                if ('clearAll' in registration.periodicSync) {
-                    registration.periodicSync.clearAll();
-                }
-
-                times.forEach(time => {
-                    scheduleNotification(registration, time);
-                });
+            times.forEach(time => {
+                scheduleNotification(time);
             });
         });
     }
 
     // תזמון התראות
-    function scheduleNotification(registration, time) {
+    function scheduleNotification(time) {
         const [hour, minute] = time.split(':').map(Number);
         const now = new Date();
         let notificationTime = new Date();
@@ -480,14 +501,18 @@ document.addEventListener('DOMContentLoaded', function () {
         const delay = notificationTime.getTime() - now.getTime();
 
         setTimeout(() => {
-            registration.showNotification('תזכורת: הודית כבר היום?', {
-                body: 'אל תשכח לכתוב את ההודיות שלך להיום!',
-                icon: './icon-192x192.png',
-                tag: `daily-reminder-${time}`,
-            });
+            if (Notification.permission === 'granted') {
+                navigator.serviceWorker.ready.then(registration => {
+                    registration.showNotification('תזכורת: הודית כבר היום?', {
+                        body: 'אל תשכח לכתוב את התודות שלך להיום!',
+                        icon: './icon-192x192.png',
+                        tag: `daily-reminder-${time}`,
+                    });
+                });
+            }
 
             // תזמון חוזר למחר
-            scheduleNotification(registration, time);
+            scheduleNotification(time);
         }, delay);
     }
 
@@ -497,11 +522,29 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        navigator.serviceWorker.ready.then(registration => {
-            const savedReminders = JSON.parse(localStorage.getItem('reminders')) || [];
-            savedReminders.forEach(time => {
-                scheduleNotification(registration, time);
-            });
+        const savedReminders = JSON.parse(localStorage.getItem('reminders')) || [];
+        savedReminders.forEach(time => {
+            scheduleNotification(time);
         });
     }
+
+    // טיפול בלחיצות בתפריט
+    viewPreviousThanksLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        loadPreviousDays();
+        previousThanksModal.style.display = 'flex';
+        history.pushState({ modalOpen: true }, null, '');
+    });
+
+    setRemindersLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        setupReminderSettings();
+        reminderModal.style.display = 'flex';
+        history.pushState({ modalOpen: true }, null, '');
+    });
+
+    viewAllDidYouKnowLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        displayAllDidYouKnow();
+    });
 });
