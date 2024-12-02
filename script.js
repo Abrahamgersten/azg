@@ -547,4 +547,20 @@ document.addEventListener('DOMContentLoaded', function () {
         e.preventDefault();
         displayAllDidYouKnow();
     });
-});
+
+    // פונקציה לפתיחת התפריט בלחיצה
+    const menuButton = document.querySelector('.menu-button');
+    const dropdownContent = document.querySelector('.dropdown-content');
+
+    menuButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
+    });
+
+    // סגירת התפריט בלחיצה מחוץ לתפריט
+    window.addEventListener('click', () => {
+        if (dropdownContent.style.display === 'block') {
+            dropdownContent.style.display = 'none';
+        }
+    });
+})
