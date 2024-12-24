@@ -94,7 +94,10 @@
                 <button class="close-button" aria-label="סגור">×</button>
             </header>
             <div class="modal-body">
-                <div id="reminder-settings" class="reminder-settings"></div>
+                <div id="reminder-settings" class="reminder-settings">
+                    <!-- החזרנו קוד מינימלי לתזכורות -->
+                    <p>כאן תוכל להגדיר תזכורות (קוד מינימלי בלבד)</p>
+                </div>
             </div>
         </div>
     </div>
@@ -150,19 +153,26 @@
                 <button class="close-button" aria-label="סגור">×</button>
             </header>
             <div class="modal-body">
-                <!-- אזור כתיבת תובנות -->
-                <div id="insights-container">
-                    <h4>כתיבת תובנות</h4>
-                    <div class="insights-container-inner" id="insights-container-inner">
-                        <!-- כאן ניצור ידנית רק תובנה אחת, וב-Add נוסיף אחרות -->
+                <!-- אזור כתיבת תובנה חדשה (כותרת+טקסט+הקלטה) -->
+                <div id="new-insight" class="insight-entry">
+                    <input type="text" id="new-insight-title" class="insight-title" placeholder="כותרת התובנה (אופציונלי)">
+                    <textarea id="new-insight-content" class="insight-input" placeholder="כתוב כאן את התובנה..."></textarea>
+                    <div class="audio-controls">
+                        <button id="start-record-btn" class="secondary-button">הקלט תובנה</button>
+                        <button id="stop-record-btn" class="secondary-button" disabled>עצור הקלטה</button>
+                        <!-- הסרנו את כפתור התמלול -->
                     </div>
-                    <button id="add-insight-button" class="add-insight-button primary-button">הוסף תובנה חדשה</button>
-                    <button id="save-insight-button" class="primary-button">שמור תובנות</button>
+                    <audio id="new-insight-audio" class="audio-player" controls style="display: none;"></audio>
                 </div>
+                
+                <button id="save-new-insight" class="primary-button">שמור תובנה חדשה</button>
+
                 <hr>
-                <!-- אזור צפייה בתובנות שנכתבו -->
+                
+                <!-- אזור צפייה בתובנות שנכתבו (עם עריכה/מחיקה) -->
                 <h4>התובנות שלי</h4>
                 <div id="insights-list" class="insights-list"></div>
+                
                 <div class="modal-buttons">
                     <button id="download-insights-word" class="primary-button">הורד תובנות (Word)</button>
                     <button id="download-thanks-excel" class="secondary-button">הורד תודות (Excel)</button>
@@ -174,4 +184,4 @@
     <!-- טעינת סקריפטים -->
     <script src="script.js"></script>
 </body>
-    </html>
+                    </html>
