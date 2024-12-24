@@ -60,6 +60,7 @@ self.addEventListener('fetch', event => {
                 );
             })
             .catch(() => {
+                // Fallback
                 if (event.request.mode === 'navigate') {
                     return caches.match('./index.html');
                 }
@@ -67,7 +68,7 @@ self.addEventListener('fetch', event => {
     );
 });
 
-// ניסיון לשפר תזכורות (עדיין מוגבל):
+// טיפול בתזכורות (Notification)
 self.addEventListener('notificationclick', event => {
     event.notification.close();
     event.waitUntil(
