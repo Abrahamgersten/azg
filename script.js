@@ -1,4 +1,4 @@
-// רישום Service Worker (ניסיון לשפר את ההתראות)
+// רישום Service Worker (משופר במעט לטיפול בתזכורות)
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')
@@ -12,42 +12,37 @@ if ('serviceWorker' in navigator) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    // אלמנטים קיימים
+    // אלמנטים קיימים לתודות
     const entriesContainer = document.getElementById('entries');
     const saveButton = document.getElementById('save-button');
     const currentDateElement = document.getElementById('current-date');
+
+    // מודאלים ותפריט
     const modal = document.getElementById('modal');
     const modalDate = document.getElementById('modal-date');
     const modalEntries = document.getElementById('modal-entries');
-    const closeButtons = document.querySelectorAll('.close-button');
-
     const promptModal = document.getElementById('prompt-modal');
     const currentLevelSpan = document.getElementById('current-level');
     const addCountSpan = document.getElementById('add-count');
     const confirmAddButton = document.getElementById('confirm-add');
     const cancelAddButton = document.getElementById('cancel-add');
-
-    const didYouKnowCarousel = document.getElementById('did-you-know-carousel');
-    const categoryFilter = document.getElementById('category-filter');
-    const filteredEntriesContainer = document.getElementById('filtered-entries');
-
-    // מודאלים נוספים
     const previousThanksModal = document.getElementById('previous-thanks-modal');
     const reminderModal = document.getElementById('reminder-modal');
     const allDidYouKnowModal = document.getElementById('all-did-you-know-modal');
     const allDidYouKnowList = document.getElementById('all-did-you-know-list');
-    const insightsModal = document.getElementById('insights-modal');
-    const insightsList = document.getElementById('insights-list');
+    const categoryFilter = document.getElementById('category-filter');
+    const filteredEntriesContainer = document.getElementById('filtered-entries');
+    const menuButton = document.querySelector('.menu-button');
+    const dropdownContent = document.querySelector('.dropdown-content');
 
-    // תפריט
+    // כפתורי תפריט
     const viewPreviousThanksLink = document.getElementById('view-previous-thanks');
     const setRemindersLink = document.getElementById('set-reminders');
     const viewAllDidYouKnowLink = document.getElementById('view-all-did-you-know');
     const viewInsightsLink = document.getElementById('view-insights');
-    const menuButton = document.querySelector('.menu-button');
-    const dropdownContent = document.querySelector('.dropdown-content');
 
-    // מקטע הידעת (20 קטעים)
+    // הידעת
+    const didYouKnowCarousel = document.getElementById('did-you-know-carousel');
     const didYouKnowFacts = [
         "מחקרו של רוברט אמונס מצא כי הכרת תודה יכולה לשפר את הבריאות הנפשית ולהפחית תחושות דיכאון.",
         "מרטין סליגמן הראה שכתיבת 3 דברים טובים בכל יום מגבירה את האושר הכללי.",
@@ -71,11 +66,11 @@ document.addEventListener('DOMContentLoaded', function () {
         "הכרת תודה מגבירה את התחושה של אופטימיות ותקווה לעתיד."
     ];
 
-    // תאריך
+    // תאריך ותזמון
     const today = new Date();
     const dateKey = today.toLocaleDateString('he-IL');
 
-    // רמות התודות המקסימליות
+    // רמות התודות
     const levels = [
         { max: 5, next: 10, add: 5 },
         { max: 10, next: 15, add: 5 },
@@ -83,10 +78,9 @@ document.addEventListener('DOMContentLoaded', function () {
         { max: 20, next: 26, add: 6 },
         { max: 26, next: null, add: 0 }
     ];
-
     let currentLevel = 5;
 
-    // יצירת שדות קלט בהתאם לרמה
+    //---------------------------- תודות ----------------------------//
     function createInputFields(level) {
         const savedEntries = JSON.parse(localStorage.getItem(dateKey)) || [];
         entriesContainer.innerHTML = '';
@@ -120,6 +114,7 @@ document.addEventListener('DOMContentLoaded', function () {
             defaultOption.disabled = true;
             defaultOption.selected = !savedEntries[i];
             select.appendChild(defaultOption);
+
             categories.forEach(cat => {
                 const option = document.createElement('option');
                 option.value = cat;
@@ -129,14 +124,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 select.appendChild(option);
             });
+
             selectWrapper.appendChild(select);
             entryContainer.appendChild(selectWrapper);
-
             entriesContainer.appendChild(entryContainer);
         }
     }
 
-    // שמירת תודות
     function saveEntries() {
         try {
             const entryContainers = entriesContainer.getElementsByClassName('entry-container');
@@ -145,7 +139,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 const category = container.querySelector('.category-select').value;
                 return text || category ? { text, category } : null;
             });
-
             localStorage.setItem(dateKey, JSON.stringify(entries));
 
             checkAndPrompt(entries.filter(entry => entry && entry.text).length);
@@ -156,7 +149,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // טעינת ימים קודמים
     function loadPreviousDays() {
         const previousDaysContainer = document.getElementById('previous-days');
         previousDaysContainer.innerHTML = '';
@@ -184,7 +176,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return !isNaN(date.getTime());
     }
 
-    // הצגת תודות בחלון מודאל
     function showEntries(date) {
         try {
             const entries = JSON.parse(localStorage.getItem(date));
@@ -206,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // הידעת?
+    //---------------------------- הידעת ----------------------------//
     function displayDidYouKnow() {
         didYouKnowCarousel.innerHTML = '';
         const dayIndex = today.getDate() % didYouKnowFacts.length;
@@ -227,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function () {
         history.pushState({ modalOpen: true }, null, '');
     }
 
-    // בדיקה והצגת הודעות להוספת תודות
+    //---------------------------- רמת התודות ----------------------------//
     function checkAndPrompt(currentFilledCount) {
         const level = levels.find(l => l.max === currentLevel);
         if (currentFilledCount >= currentLevel && level && level.next) {
@@ -253,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function () {
         history.back();
     });
 
-    // סגירת מודאלים והיסטוריה
+    //---------------------------- מודאלים והיסטוריה ----------------------------//
     window.addEventListener('popstate', () => {
         closeAllModals();
     });
@@ -267,6 +258,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    const closeButtons = document.querySelectorAll('.close-button');
     closeButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             closeAllModals();
@@ -281,13 +273,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // הצגת היום בשבוע והתאריך העברי
+    //---------------------------- תאריך עברי וכו' ----------------------------//
     function displayCurrentDate() {
         const daysOfWeek = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
         const dayOfWeek = `היום יום ${daysOfWeek[today.getDay()]}`;
         fetchHebrewDate().then(hebrewDate => {
             currentDateElement.textContent = `${dayOfWeek}: ${hebrewDate}`;
-        }).catch(error => {
+        }).catch(() => {
             currentDateElement.textContent = dayOfWeek;
         });
     }
@@ -307,9 +299,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // סינון תודות
+    //---------------------------- סינון תודות ----------------------------//
     categoryFilter.addEventListener('change', applyCategoryFilter);
-
     function applyCategoryFilter() {
         const selectedCategory = categoryFilter.value;
         filteredEntriesContainer.innerHTML = '';
@@ -354,7 +345,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // אתחול
+    //---------------------------- אתחול ----------------------------//
     function initializeApp() {
         displayCurrentDate();
         const savedEntries = JSON.parse(localStorage.getItem(dateKey)) || [];
@@ -382,7 +373,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initializeApp();
     saveButton.addEventListener('click', saveEntries);
 
-    // תפריט
+    //---------------------------- תפריט ----------------------------//
     menuButton.addEventListener('click', (e) => {
         e.stopPropagation();
         dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
@@ -412,15 +403,38 @@ document.addEventListener('DOMContentLoaded', function () {
         displayAllDidYouKnow();
     });
 
-    // ========== פונקציונליות תובנות משודרגת ==========
-    const insightsContainer = document.getElementById('insights-container');
+    //---------------------------- ניהול תובנות ----------------------------//
+    const insightsModal = document.getElementById('insights-modal');
+    const insightsContainerInner = document.getElementById('insights-container-inner');
     const addInsightButton = document.getElementById('add-insight-button');
     const saveInsightButton = document.getElementById('save-insight-button');
+    const insightsList = document.getElementById('insights-list');
+    const downloadInsightsWordBtn = document.getElementById('download-insights-word');
+    const downloadThanksExcelBtn = document.getElementById('download-thanks-excel');
 
+    viewInsightsLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        openInsightsModal();
+    });
+
+    function openInsightsModal() {
+        // ננקה תובנות קודמות שכבר על המסך
+        insightsContainerInner.innerHTML = '';
+        // נוסיף תובנה אחת ריקה
+        createInsightEntry();
+
+        // נטען את רשימת התובנות הקיימות
+        displayInsightsList();
+
+        insightsModal.style.display = 'flex';
+        history.pushState({ modalOpen: true }, null, '');
+    }
+
+    // יצירת רובריקת תובנה
     function createInsightEntry() {
-        const insightEntry = document.createElement('div');
-        insightEntry.className = 'insight-entry';
-        insightEntry.innerHTML = `
+        const div = document.createElement('div');
+        div.className = 'insight-entry';
+        div.innerHTML = `
             <input type="text" class="insight-title" placeholder="כותרת התובנה (אופציונלי)">
             <textarea class="insight-input" placeholder="כתוב כאן את התובנה..."></textarea>
             <div class="audio-controls">
@@ -430,12 +444,17 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
             <audio class="audio-player" controls style="display: none;"></audio>
         `;
-        insightsContainer.appendChild(insightEntry);
+        insightsContainerInner.appendChild(div);
 
-        const startRecordBtn = insightEntry.querySelector('.start-record-btn');
-        const stopRecordBtn = insightEntry.querySelector('.stop-record-btn');
-        const transcribeBtn = insightEntry.querySelector('.transcribe-btn');
-        const audioPlayer = insightEntry.querySelector('.audio-player');
+        setupAudioRecording(div);
+    }
+
+    // התקנת אירועי אודיו בכל רובריקה
+    function setupAudioRecording(insightDiv) {
+        const startRecordBtn = insightDiv.querySelector('.start-record-btn');
+        const stopRecordBtn = insightDiv.querySelector('.stop-record-btn');
+        const transcribeBtn = insightDiv.querySelector('.transcribe-btn');
+        const audioPlayer = insightDiv.querySelector('.audio-player');
 
         let mediaRecorder;
         let chunks = [];
@@ -450,6 +469,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream);
                 chunks = [];
+                mediaRecorder.ondataavailable = (e) => {
+                    chunks.push(e.data);
+                };
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(chunks, { type: 'audio/ogg; codecs=opus' });
+                    const audioURL = URL.createObjectURL(blob);
+                    audioPlayer.src = audioURL;
+                    audioPlayer.style.display = 'block';
+                    audioPlayer.dataset.audioBlob = blob;
+                };
+
                 mediaRecorder.start();
                 startRecordBtn.disabled = true;
                 stopRecordBtn.disabled = false;
@@ -469,102 +499,65 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // איסוף האודיו
-        if (window.MediaRecorder) {
-            mediaRecorder?.addEventListener('dataavailable', (e) => {
-                chunks.push(e.data);
-            });
-            mediaRecorder?.addEventListener('stop', () => {
-                const blob = new Blob(chunks, { type: 'audio/ogg; codecs=opus' });
-                const audioURL = URL.createObjectURL(blob);
-                audioPlayer.src = audioURL;
-                audioPlayer.style.display = 'block';
-                // שמירה ב-<audio> עצמו
-                audioPlayer.dataset.audioBlob = blob;
-            });
-        }
-
-        // תמלול הקלטה (SpeechRecognition יכול להיות מוגבל)
+        // תמלול דמה
         transcribeBtn.addEventListener('click', async () => {
-            if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
-                alert('הדפדפן לא תומך בתמלול הקלטה.');
-                return;
-            }
-            const insightTextArea = insightEntry.querySelector('.insight-input');
-            try {
-                // נשתמש ב-BlobReader ? או נבצע SpeechRecognition חי? בדרך כלל SpeechRecognition עובדת על הקלטה חיה, לא על Blob.
-                // לשם ההדגמה, נדגים תמלול מזויף.
-                alert('תמלול הקלטה בדפדפנים דורש שימוש ב-API נוסף, בדרך כלל חי בלבד (Real-time). כאן נציג רק הדגמה.');
-                // נניח שהתמלול הצליח והחזיר "אדמו"
-                const fakeTranscript = 'תמלול זמני של ההקלטה (דוגמה...)';
-                insightTextArea.value += '\n' + fakeTranscript;
-            } catch (err) {
-                alert('שגיאה בתמלול ההקלטה: ' + err.message);
-            }
+            alert('תמלול חי או על-ידי צד שרת אינו זמין כרגע. נעשה תמלול דמה.');
+            const textArea = insightDiv.querySelector('.insight-input');
+            textArea.value += '\n[תמלול דמה של ההקלטה]';
         });
     }
 
-    // יצירת טופס ראשון לתובנות
-    createInsightEntry();
-
-    // הוספת רובריקה נוספת לתובנות
+    // הוספת רובריקה נוספת
     addInsightButton.addEventListener('click', () => {
         createInsightEntry();
     });
 
     // שמירת כל התובנות
     saveInsightButton.addEventListener('click', () => {
-        const insightEntries = insightsContainer.querySelectorAll('.insight-entry');
+        const insightEntries = insightsContainerInner.querySelectorAll('.insight-entry');
         const allInsights = JSON.parse(localStorage.getItem('insights')) || [];
 
-        insightEntries.forEach((entry) => {
+        insightEntries.forEach(entry => {
             const title = entry.querySelector('.insight-title').value.trim();
             const content = entry.querySelector('.insight-input').value.trim();
             const audioPlayer = entry.querySelector('.audio-player');
             let audioBlob = audioPlayer.dataset.audioBlob || null;
-            let audioBase64 = '';
 
-            // אם יש הקלטה, נהפוך אותה ל-Base64 לשמירה ב-LocalStorage (עלול להיות כבד)
+            if (!title && !content && !audioBlob) {
+                return; // רובריקה ריקה
+            }
+
+            // המרת אודיו ל-Base64 אם קיים
             if (audioBlob) {
                 const reader = new FileReader();
-                // קול-סאק: בקריאה סינכרונית צריך לבצע הבטחה, אבל לצורך ההמחשה נייצר Delta
-                // לשם פשטות, נמשיך בלי להמתין.
                 reader.onload = (evt) => {
-                    audioBase64 = evt.target.result;
+                    const audioBase64 = evt.target.result;
                     pushInsight(title, content, audioBase64);
+                    localStorage.setItem('insights', JSON.stringify(allInsights));
                 };
                 reader.readAsDataURL(audioBlob);
             } else {
-                // בלי אודיו
                 pushInsight(title, content, '');
+                localStorage.setItem('insights', JSON.stringify(allInsights));
+            }
+
+            function pushInsight(t, c, audio64) {
+                allInsights.push({
+                    title: t || 'תובנה חדשה',
+                    content: c,
+                    audio: audio64
+                });
             }
         });
 
-        function pushInsight(title, content, audio64) {
-            const finalTitle = title || 'תובנה חדשה';
-            allInsights.push({
-                title: finalTitle,
-                content,
-                audio: audio64
-            });
-            localStorage.setItem('insights', JSON.stringify(allInsights));
-        }
-        alert('כל התובנות נשמרו בהצלחה!');
-
-        // ניקוי הרובריקה
-        insightsContainer.innerHTML = '';
-        createInsightEntry();
+        alert('התובנות נשמרו בהצלחה!');
+        displayInsightsList(); // עדכון הרשימה
+        insightsContainerInner.innerHTML = ''; // ניקוי
+        createInsightEntry(); // תובנה חדשה ריקה
     });
 
-    // צפייה בתובנות
-    viewInsightsLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        displayInsights();
-        insightsModal.style.display = 'flex';
-        history.pushState({ modalOpen: true }, null, '');
-    });
-
-    function displayInsights() {
+    // הצגת רשימת התובנות
+    function displayInsightsList() {
         insightsList.innerHTML = '';
         const insights = JSON.parse(localStorage.getItem('insights')) || [];
         if (!insights.length) {
@@ -587,9 +580,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const insightDiv = document.createElement('div');
             insightDiv.style.display = 'none';
             insightDiv.style.marginTop = '10px';
-            insightDiv.innerHTML = `
-                <p>${insight.content || ''}</p>
-            `;
+            insightDiv.innerHTML = `<p>${insight.content || ''}</p>`;
+
             if (insight.audio) {
                 const audio = document.createElement('audio');
                 audio.controls = true;
@@ -610,10 +602,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // הורדת התובנות כקובץ Word
-    const downloadInsightsWordBtn = document.getElementById('download-insights-word');
-    const downloadThanksExcelBtn = document.getElementById('download-thanks-excel');
-
+    // הורדת תובנות כקובץ Word
     downloadInsightsWordBtn?.addEventListener('click', () => {
         const insights = JSON.parse(localStorage.getItem('insights')) || [];
         if (!insights.length) {
@@ -636,7 +625,7 @@ document.addEventListener('DOMContentLoaded', function () {
         URL.revokeObjectURL(url);
     });
 
-    // הורדת התודות כקובץ Excel
+    // הורדת תודות כקובץ Excel
     downloadThanksExcelBtn?.addEventListener('click', () => {
         const allThanks = [];
         for (let i = 0; i < localStorage.length; i++) {
@@ -682,19 +671,13 @@ document.addEventListener('DOMContentLoaded', function () {
         URL.revokeObjectURL(url);
     });
 
-    // ========== פונקציות התזכורות (עדיין מוגבלות) ==========
+    //---------------------------- תזכורות (עדיין מוגבל) ----------------------------//
     function setupReminderSettings() {
-        // ...
+        // השארתי כקוד ריק/מקורי
     }
-    function requestNotificationPermission() { 
-        // ...
-    }
-    function saveReminders() { 
-        // ...
-    }
-    function scheduleNotification(time) { 
-        // ...
-    }
+    function requestNotificationPermission() { }
+    function saveReminders() { }
+    function scheduleNotification(time) { }
     function initializeReminders() {
         // ...
     }
