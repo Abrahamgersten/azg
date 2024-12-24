@@ -1,4 +1,4 @@
-// רישום Service Worker (משופר במעט לטיפול בתזכורות)
+// רישום Service Worker (גרסה משופרת לטיפול בתזכורות בסיסיות)
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')
@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const setRemindersLink = document.getElementById('set-reminders');
     const viewAllDidYouKnowLink = document.getElementById('view-all-did-you-know');
     const viewInsightsLink = document.getElementById('view-insights');
+    const downloadThanksWordFromMenu = document.getElementById('download-thanks-word'); // כפתור הורדת התודות בוורד
 
     // הידעת
     const didYouKnowCarousel = document.getElementById('did-you-know-carousel');
@@ -376,7 +377,7 @@ document.addEventListener('DOMContentLoaded', function () {
     //---------------------------- תפריט ----------------------------//
     menuButton.addEventListener('click', (e) => {
         e.stopPropagation();
-        dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
+        dropdownContent.style.display = (dropdownContent.style.display === 'block') ? 'none' : 'block';
     });
     window.addEventListener('click', () => {
         if (dropdownContent.style.display === 'block') {
@@ -403,6 +404,52 @@ document.addEventListener('DOMContentLoaded', function () {
         displayAllDidYouKnow();
     });
 
+    // כפתור הורדת תודות (Word) מהתפריט
+    downloadThanksWordFromMenu?.addEventListener('click', (e) => {
+        e.preventDefault();
+        downloadThanksAsWord();
+    });
+
+    function downloadThanksAsWord() {
+        // נאסוף את כל התודות מכל התאריכים
+        const allThanks = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (isValidDate(key)) {
+                const entries = JSON.parse(localStorage.getItem(key));
+                if (entries && entries.length) {
+                    entries.forEach((entry, idx) => {
+                        if (entry) {
+                            allThanks.push({
+                                date: key,
+                                index: idx + 1,
+                                text: entry.text,
+                                category: entry.category || ''
+                            });
+                        }
+                    });
+                }
+            }
+        }
+        if (!allThanks.length) {
+            alert('לא נמצאו תודות להורדה.');
+            return;
+        }
+        let docContent = 'כל התודות שנכתבו:\n\n';
+        allThanks.forEach((item, index) => {
+            docContent += `${index + 1}. [${item.date}] (קטגוריה: ${item.category}) - ${item.text}\n`;
+        });
+        const blob = new Blob([docContent], { type: 'application/msword' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'תודות.doc';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
     //---------------------------- ניהול תובנות ----------------------------//
     const insightsModal = document.getElementById('insights-modal');
     const newInsightTitle = document.getElementById('new-insight-title');
@@ -412,8 +459,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const stopRecordBtn = document.getElementById('stop-record-btn');
     const saveNewInsightBtn = document.getElementById('save-new-insight');
     const insightsList = document.getElementById('insights-list');
-    const downloadInsightsWordBtn = document.getElementById('download-insights-word');
-    const downloadThanksExcelBtn = document.getElementById('download-thanks-excel');
 
     let mediaRecorder;
     let chunks = [];
@@ -424,6 +469,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     function openInsightsModal() {
+        // איפוס שדות התובנה
         newInsightTitle.value = '';
         newInsightContent.value = '';
         newInsightAudio.src = '';
@@ -432,6 +478,7 @@ document.addEventListener('DOMContentLoaded', function () {
         startRecordBtn.disabled = false;
         stopRecordBtn.disabled = true;
         chunks = [];
+
         displayInsightsList();
         insightsModal.style.display = 'flex';
         history.pushState({ modalOpen: true }, null, '');
@@ -479,6 +526,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const content = newInsightContent.value.trim();
         const audioBlob = newInsightAudio.dataset.audioBlob || null;
 
+        // אם לא הוקלד כלום ולא הוקלט כלום
         if (!title && !content && !audioBlob) {
             alert('אין מידע לשמור.');
             return;
@@ -486,8 +534,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const insights = JSON.parse(localStorage.getItem('insights')) || [];
 
-        // אם יש אודיו, נמיר אותו ל-Base64
         if (audioBlob) {
+            // אם יש אודיו, נמיר אותו ל-Base64
             const reader = new FileReader();
             reader.onload = (evt) => {
                 const audioBase64 = evt.target.result;
@@ -523,7 +571,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // הצגת רשימת התובנות עם עריכה/מחיקה
+    // הצגת רשימת התובנות (כותרת + כפתורי "הצג" ו"מחק", ומתחת לתובנה "ערוך תובנה")
     function displayInsightsList() {
         insightsList.innerHTML = '';
         const insights = JSON.parse(localStorage.getItem('insights')) || [];
@@ -531,42 +579,39 @@ document.addEventListener('DOMContentLoaded', function () {
             insightsList.innerHTML = '<p>עדיין לא נכתבו תובנות.</p>';
             return;
         }
+
         insights.forEach((insight, idx) => {
             const wrapper = document.createElement('div');
             wrapper.style.marginBottom = '15px';
 
-            const title = document.createElement('strong');
-            title.textContent = `כותרת: ${insight.title || 'תובנה חדשה'}`;
-            wrapper.appendChild(title);
+            // יצוג של כותרת
+            const titleEl = document.createElement('strong');
+            titleEl.textContent = `כותרת: ${insight.title}`;
+            wrapper.appendChild(titleEl);
 
-            // כפתור הצגת התובנה במלואה
-            const showFullBtn = document.createElement('button');
-            showFullBtn.textContent = 'הצג/ערוך תובנה';
-            showFullBtn.className = 'secondary-button';
-            showFullBtn.style.marginLeft = '10px';
+            // כפתור הצג
+            const showBtn = document.createElement('button');
+            showBtn.textContent = 'הצג';
+            showBtn.className = 'secondary-button';
+            showBtn.style.marginLeft = '10px';
 
             // כפתור מחיקה
             const deleteBtn = document.createElement('button');
             deleteBtn.textContent = 'מחק';
-            deleteBtn.className = 'delete-insight-btn secondary-button';
+            deleteBtn.className = 'secondary-button';
+            deleteBtn.style.marginLeft = '10px';
 
-            // עריכה: נייצר div נפרד
+            // חלק התובנה עצמו
             const insightDiv = document.createElement('div');
             insightDiv.style.display = 'none';
             insightDiv.style.marginTop = '10px';
 
-            const editableTitle = document.createElement('input');
-            editableTitle.type = 'text';
-            editableTitle.value = insight.title;
-            editableTitle.className = 'insight-title';
-            insightDiv.appendChild(editableTitle);
+            // הטקסט עצמו
+            const contentP = document.createElement('p');
+            contentP.textContent = insight.content;
+            insightDiv.appendChild(contentP);
 
-            const editableContent = document.createElement('textarea');
-            editableContent.className = 'insight-input';
-            editableContent.value = insight.content;
-            editableContent.style.marginTop = '10px';
-            insightDiv.appendChild(editableContent);
-
+            // אם יש אודיו
             if (insight.audio) {
                 const audio = document.createElement('audio');
                 audio.controls = true;
@@ -576,20 +621,24 @@ document.addEventListener('DOMContentLoaded', function () {
                 insightDiv.appendChild(audio);
             }
 
-            // כפתור שמירה לאחר עריכה
-            const saveEditBtn = document.createElement('button');
-            saveEditBtn.textContent = 'שמור עריכה';
-            saveEditBtn.className = 'secondary-button';
-            saveEditBtn.style.marginTop = '10px';
+            // כפתור ערוך מתחת לתובנה
+            const editBtn = document.createElement('button');
+            editBtn.textContent = 'ערוך תובנה';
+            editBtn.className = 'secondary-button';
+            editBtn.style.marginTop = '10px';
 
-            insightDiv.appendChild(saveEditBtn);
+            editBtn.addEventListener('click', () => {
+                editInsight(idx);
+            });
 
-            // הצגה/הסתרת תובנה
-            showFullBtn.addEventListener('click', () => {
+            insightDiv.appendChild(editBtn);
+
+            // הצגת התובנה
+            showBtn.addEventListener('click', () => {
                 insightDiv.style.display = (insightDiv.style.display === 'none') ? 'block' : 'none';
             });
 
-            // מחיקת תובנה
+            // מחיקת התובנה
             deleteBtn.addEventListener('click', () => {
                 if (confirm('האם למחוק את התובנה?')) {
                     insights.splice(idx, 1);
@@ -598,18 +647,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
 
-            // שמירת עריכה
-            saveEditBtn.addEventListener('click', () => {
-                const newTitle = editableTitle.value.trim() || 'תובנה חדשה';
-                const newContent = editableContent.value.trim();
-                insights[idx].title = newTitle;
-                insights[idx].content = newContent;
-                localStorage.setItem('insights', JSON.stringify(insights));
-                alert('התובנה נערכה בהצלחה!');
-                displayInsightsList();
-            });
-
-            wrapper.appendChild(showFullBtn);
+            wrapper.appendChild(showBtn);
             wrapper.appendChild(deleteBtn);
             wrapper.appendChild(insightDiv);
 
@@ -617,84 +655,99 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // הורדת תובנות כקובץ Word
-    downloadInsightsWordBtn?.addEventListener('click', () => {
+    function editInsight(index) {
         const insights = JSON.parse(localStorage.getItem('insights')) || [];
-        if (!insights.length) {
-            alert('אין תובנות להוריד.');
-            return;
-        }
-        let docContent = 'תובנות שנכתבו:\n\n';
-        insights.forEach((item, idx) => {
-            docContent += `תובנה ${idx + 1} - כותרת: ${item.title || 'תובנה חדשה'}\n`;
-            docContent += `תוכן התובנה: ${item.content}\n\n`;
-        });
-        const blob = new Blob([docContent], { type: 'application/msword' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'תובנות.doc';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    });
+        const insightObj = insights[index];
+        if (!insightObj) return;
 
-    // הורדת תודות כקובץ Excel
-    downloadThanksExcelBtn?.addEventListener('click', () => {
-        const allThanks = [];
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (isValidDate(key)) {
-                const entries = JSON.parse(localStorage.getItem(key));
-                if (entries && entries.length) {
-                    entries.forEach((entry, idx) => {
-                        if (entry) {
-                            allThanks.push({
-                                date: key,
-                                index: idx + 1,
-                                text: entry.text,
-                                category: entry.category || ''
-                            });
-                        }
-                    });
-                }
-            }
-        }
-        if (!allThanks.length) {
-            alert('לא נמצאו תודות להורדה.');
-            return;
-        }
-        let csvContent = 'תאריך,מספר,תודה,קטגוריה\n';
-        allThanks.forEach(item => {
-            const row = [
-                item.date,
-                item.index,
-                `"${item.text?.replace(/"/g, '""')}"`,
-                `"${item.category?.replace(/"/g, '""')}"`
-            ];
-            csvContent += row.join(',') + '\n';
-        });
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'תודות.csv';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    });
+        // פתיחת מודאל עריכה קטן/זמני? אפשר פשוט לשנות במקום
+        const newTitle = prompt('ערוך כותרת:', insightObj.title);
+        if (newTitle === null) return; // ביטול
+
+        const newContent = prompt('ערוך תוכן התובנה:', insightObj.content);
+        if (newContent === null) return;
+
+        insightObj.title = newTitle.trim() || 'תובנה חדשה';
+        insightObj.content = newContent.trim();
+        localStorage.setItem('insights', JSON.stringify(insights));
+
+        alert('התובנה נערכה בהצלחה!');
+        displayInsightsList();
+    }
+
+    // ---------------- הורדת קובץ תודות מהתפריט (כבר מומש) ----------------
+    // [downloadThanksAsWord] למעלה
 
     //---------------------------- תזכורות (מינימלי) ----------------------------//
     function setupReminderSettings() {
         const reminderSettings = document.getElementById('reminder-settings');
-        reminderSettings.innerHTML = '<p>כאן אמור להיות הקוד לתזכורות יומיות (מינימלי).</p>';
+        reminderSettings.innerHTML = `
+            <label>בחר שעה יומית לתזכורת:</label>
+            <input type="time" id="daily-reminder-time">
+            <button id="save-daily-reminder" class="primary-button">שמור תזכורת</button>
+        `;
+
+        const dailyReminderTimeInput = document.getElementById('daily-reminder-time');
+        const saveDailyReminderBtn = document.getElementById('save-daily-reminder');
+
+        const storedTime = localStorage.getItem('dailyReminderTime');
+        if (storedTime) {
+            dailyReminderTimeInput.value = storedTime;
+        }
+
+        saveDailyReminderBtn.addEventListener('click', () => {
+            const chosenTime = dailyReminderTimeInput.value;
+            if (!chosenTime) {
+                alert('אנא בחר שעה');
+                return;
+            }
+            localStorage.setItem('dailyReminderTime', chosenTime);
+            alert('התזכורת נשמרה בהצלחה!');
+
+            // ננסה "לדמות" תזכורת יומית
+            scheduleDailyReminder(chosenTime);
+        });
     }
-    function requestNotificationPermission() { }
-    function saveReminders() { }
-    function scheduleNotification(time) { }
+
+    function requestNotificationPermission() {
+        if (Notification.permission !== 'granted') {
+            Notification.requestPermission();
+        }
+    }
+
+    function scheduleDailyReminder(chosenTime) {
+        // ניקוי setTimeout קודם אם תרצה
+        requestNotificationPermission();
+
+        // חישוב difference
+        const [hh, mm] = chosenTime.split(':').map(Number);
+        const now = new Date();
+        let reminderTime = new Date();
+        reminderTime.setHours(hh, mm, 0, 0);
+        if (reminderTime <= now) {
+            reminderTime.setDate(reminderTime.getDate() + 1);
+        }
+
+        const delay = reminderTime - now;
+
+        setTimeout(() => {
+            if (Notification.permission === 'granted') {
+                // נדמה תזכורת
+                new Notification('תזכורת יומית:', {
+                    body: 'אל תשכח להודות/לכתוב תובנה!',
+                    tag: 'daily-reminder'
+                });
+            }
+            // נקבע תזמון חדש למחר
+            scheduleDailyReminder(chosenTime);
+        }, delay);
+    }
+
+    function saveReminders() {}
     function initializeReminders() {
-        // ...
+        const chosenTime = localStorage.getItem('dailyReminderTime');
+        if (chosenTime) {
+            scheduleDailyReminder(chosenTime);
+        }
     }
 });
