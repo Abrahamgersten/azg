@@ -18,6 +18,7 @@
                 <a href="#" id="view-previous-thanks">תודות מימים קודמים</a>
                 <a href="#" id="set-reminders">הגדר תזכורות יומיות</a>
                 <a href="#" id="view-all-did-you-know">כל קטעי 'הידעת?'</a>
+                <a href="#" id="view-insights">צפייה בתובנות</a>
             </div>
         </nav>
 
@@ -68,6 +69,30 @@
                     <!-- קטעי הידעת יתווספו כאן דרך JavaScript -->
                 </div>
             </section>
+            
+            <!-- מקטע לכתיבת תובנות (כותרת + תוכן/הקלטה), עם אפשרות להוסיף עוד -->
+            <section class="insights-section">
+                <h3>תובנות שהתחדשו לי</h3>
+                <div id="insights-container">
+                    <!-- כותרת התובנה + טקסט + הקלטה + תמלול -->
+                    <div class="insight-entry">
+                        <input type="text" class="insight-title" placeholder="כותרת התובנה (אופציונלי)">
+                        
+                        <textarea class="insight-input" placeholder="כתוב כאן את התובנה..."></textarea>
+                        
+                        <div class="audio-controls">
+                            <button class="start-record-btn secondary-button">התחל הקלטה</button>
+                            <button class="stop-record-btn secondary-button" disabled>עצור הקלטה</button>
+                            <button class="transcribe-btn secondary-button" disabled>תמלל הקלטה</button>
+                        </div>
+                        
+                        <audio class="audio-player" controls style="display: none;"></audio>
+                    </div>
+                </div>
+
+                <button id="add-insight-entry" class="add-insight-button primary-button">הוסף תובנה נוספת</button>
+                <button id="save-insight-button" class="primary-button">שמור תובנות</button>
+            </section>
         </main>
     </div>
 
@@ -79,9 +104,7 @@
                 <button class="close-button" aria-label="סגור">×</button>
             </header>
             <div class="modal-body">
-                <div id="previous-days" class="previous-days-grid">
-                    <!-- הימים הקודמים יתווספו כאן דרך JavaScript -->
-                </div>
+                <div id="previous-days" class="previous-days-grid"></div>
             </div>
         </div>
     </div>
@@ -94,9 +117,7 @@
                 <button class="close-button" aria-label="סגור">×</button>
             </header>
             <div class="modal-body">
-                <div id="reminder-settings" class="reminder-settings">
-                    <!-- הגדרות התזכורות יתווספו כאן דרך JavaScript -->
-                </div>
+                <div id="reminder-settings" class="reminder-settings"></div>
             </div>
         </div>
     </div>
@@ -139,9 +160,24 @@
                 <button class="close-button" aria-label="סגור">×</button>
             </header>
             <div class="modal-body">
-                <ul id="all-did-you-know-list">
-                    <!-- כל קטעי הידעת יתווספו כאן דרך JavaScript -->
-                </ul>
+                <ul id="all-did-you-know-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- מודאל לצפייה בתובנות + אפשרות הורדה (וורד + אקסל) -->
+    <div id="insights-modal" class="modal">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h3>כל התובנות שלי</h3>
+                <button class="close-button" aria-label="סגור">×</button>
+            </header>
+            <div class="modal-body">
+                <div id="insights-list" class="insights-list"></div>
+                <div class="modal-buttons">
+                    <button id="download-insights-word" class="primary-button">הורד תובנות (Word)</button>
+                    <button id="download-thanks-excel" class="secondary-button">הורד תודות (Excel)</button>
+                </div>
             </div>
         </div>
     </div>
@@ -149,4 +185,4 @@
     <!-- טעינת סקריפטים -->
     <script src="script.js"></script>
 </body>
-    </html>
+            </html
