@@ -15,12 +15,14 @@
         <nav class="dropdown-menu">
             <button class="menu-button" aria-label="תפריט">&#9776;</button>
             <div class="dropdown-content">
-                <a href="#" id="download-thanks-word">הורד תודות (Word)</a> <!-- שינוי מסעיף 4 -->
                 <a href="#" id="view-previous-thanks">תודות מימים קודמים</a>
                 <a href="#" id="set-reminders">הגדר תזכורות יומיות</a>
                 <a href="#" id="view-all-did-you-know">כל קטעי 'הידעת?'</a>
                 <!-- סעיף חדש: צפייה ועריכת תובנות -->
                 <a href="#" id="view-insights">ניהול תובנות</a>
+                <!-- כפתור הורדת התודות בסוף, ולאחריו כפתור להורדת התובנות -->
+                <a href="#" id="download-thanks-word">הורד תודות (Word)</a>
+                <a href="#" id="download-all-insights">הורד תובנות (Word)</a>
             </div>
         </nav>
 
@@ -95,10 +97,9 @@
                 <button class="close-button" aria-label="סגור">×</button>
             </header>
             <div class="modal-body">
-                <div id="reminder-settings" class="reminder-settings">
-                    <!-- תזכורות יומיות - שעה אחת ביום, בסיסי -->
-                    <label>בחר שעה יומית לתזכורת:</label>
-                    <input type="time" id="daily-reminder-time">
+                <div id="reminder-settings" class="reminder-settings" style="text-align: center;">
+                    <label style="display: block; margin-bottom: 10px;">בחר שעה יומית לתזכורת:</label>
+                    <input type="time" id="daily-reminder-time" style="font-size: 1.2em; padding: 5px 10px;">
                     <button id="save-daily-reminder" class="primary-button">שמור תזכורת</button>
                 </div>
             </div>
@@ -150,10 +151,9 @@
 
     <!-- מודאל לניהול תובנות -->
     <div id="insights-modal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="font-family: 'Rubik', sans-serif;">
             <header class="modal-header">
-                <!-- בקשה מסעיף 3: כותרת גדולה וממורכזת -->
-                <h3 style="text-align: center; font-size: 1.8em;">התובנות שלי</h3>
+                <h3 style="text-align: center; font-size: 1.8em; width:100%">התובנות שלי</h3>
                 <button class="close-button" aria-label="סגור">×</button>
             </header>
             <div class="modal-body">
@@ -172,7 +172,8 @@
 
                 <hr>
                 
-                <!-- אזור צפייה בתובנות שנכתבו (עם עריכה/מחיקה) -->
+                <!-- כותרת גדולה ומרכזית מעל הרשימה עצמה -->
+                <h3 style="text-align: center; font-size: 1.6em; margin-bottom:20px;">התובנות שנשמרו</h3>
                 <div id="insights-list" class="insights-list"></div>
             </div>
         </div>
@@ -181,4 +182,4 @@
     <!-- טעינת סקריפטים -->
     <script src="script.js"></script>
 </body>
-</html>
+                    </html>
