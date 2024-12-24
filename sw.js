@@ -67,10 +67,9 @@ self.addEventListener('fetch', event => {
     );
 });
 
-// טיפול באירוע notificationclick
+// ניסיון לשפר תזכורות (עדיין מוגבל):
 self.addEventListener('notificationclick', event => {
     event.notification.close();
-
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
             for (const client of clientList) {
