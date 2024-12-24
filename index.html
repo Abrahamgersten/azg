@@ -15,6 +15,7 @@
         <nav class="dropdown-menu">
             <button class="menu-button" aria-label="תפריט">&#9776;</button>
             <div class="dropdown-content">
+                <a href="#" id="download-thanks-word">הורד תודות (Word)</a> <!-- שינוי מסעיף 4 -->
                 <a href="#" id="view-previous-thanks">תודות מימים קודמים</a>
                 <a href="#" id="set-reminders">הגדר תזכורות יומיות</a>
                 <a href="#" id="view-all-did-you-know">כל קטעי 'הידעת?'</a>
@@ -95,8 +96,10 @@
             </header>
             <div class="modal-body">
                 <div id="reminder-settings" class="reminder-settings">
-                    <!-- החזרנו קוד מינימלי לתזכורות -->
-                    <p>כאן תוכל להגדיר תזכורות (קוד מינימלי בלבד)</p>
+                    <!-- תזכורות יומיות - שעה אחת ביום, בסיסי -->
+                    <label>בחר שעה יומית לתזכורת:</label>
+                    <input type="time" id="daily-reminder-time">
+                    <button id="save-daily-reminder" class="primary-button">שמור תזכורת</button>
                 </div>
             </div>
         </div>
@@ -149,7 +152,8 @@
     <div id="insights-modal" class="modal">
         <div class="modal-content">
             <header class="modal-header">
-                <h3>ניהול התובנות שלי</h3>
+                <!-- בקשה מסעיף 3: כותרת גדולה וממורכזת -->
+                <h3 style="text-align: center; font-size: 1.8em;">התובנות שלי</h3>
                 <button class="close-button" aria-label="סגור">×</button>
             </header>
             <div class="modal-body">
@@ -160,7 +164,6 @@
                     <div class="audio-controls">
                         <button id="start-record-btn" class="secondary-button">הקלט תובנה</button>
                         <button id="stop-record-btn" class="secondary-button" disabled>עצור הקלטה</button>
-                        <!-- הסרנו את כפתור התמלול -->
                     </div>
                     <audio id="new-insight-audio" class="audio-player" controls style="display: none;"></audio>
                 </div>
@@ -170,13 +173,7 @@
                 <hr>
                 
                 <!-- אזור צפייה בתובנות שנכתבו (עם עריכה/מחיקה) -->
-                <h4>התובנות שלי</h4>
                 <div id="insights-list" class="insights-list"></div>
-                
-                <div class="modal-buttons">
-                    <button id="download-insights-word" class="primary-button">הורד תובנות (Word)</button>
-                    <button id="download-thanks-excel" class="secondary-button">הורד תודות (Excel)</button>
-                </div>
             </div>
         </div>
     </div>
@@ -184,4 +181,4 @@
     <!-- טעינת סקריפטים -->
     <script src="script.js"></script>
 </body>
-                    </html>
+</html>
