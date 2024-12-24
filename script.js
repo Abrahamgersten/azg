@@ -405,12 +405,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     //---------------------------- ניהול תובנות ----------------------------//
     const insightsModal = document.getElementById('insights-modal');
-    const insightsContainerInner = document.getElementById('insights-container-inner');
-    const addInsightButton = document.getElementById('add-insight-button');
-    const saveInsightButton = document.getElementById('save-insight-button');
+    const newInsightTitle = document.getElementById('new-insight-title');
+    const newInsightContent = document.getElementById('new-insight-content');
+    const newInsightAudio = document.getElementById('new-insight-audio');
+    const startRecordBtn = document.getElementById('start-record-btn');
+    const stopRecordBtn = document.getElementById('stop-record-btn');
+    const saveNewInsightBtn = document.getElementById('save-new-insight');
     const insightsList = document.getElementById('insights-list');
     const downloadInsightsWordBtn = document.getElementById('download-insights-word');
     const downloadThanksExcelBtn = document.getElementById('download-thanks-excel');
+
+    let mediaRecorder;
+    let chunks = [];
 
     viewInsightsLink.addEventListener('click', (e) => {
         e.preventDefault();
@@ -418,145 +424,106 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     function openInsightsModal() {
-        // ננקה תובנות קודמות שכבר על המסך
-        insightsContainerInner.innerHTML = '';
-        // נוסיף תובנה אחת ריקה
-        createInsightEntry();
-
-        // נטען את רשימת התובנות הקיימות
+        newInsightTitle.value = '';
+        newInsightContent.value = '';
+        newInsightAudio.src = '';
+        newInsightAudio.style.display = 'none';
+        newInsightAudio.dataset.audioBlob = '';
+        startRecordBtn.disabled = false;
+        stopRecordBtn.disabled = true;
+        chunks = [];
         displayInsightsList();
-
         insightsModal.style.display = 'flex';
         history.pushState({ modalOpen: true }, null, '');
     }
 
-    // יצירת רובריקת תובנה
-    function createInsightEntry() {
-        const div = document.createElement('div');
-        div.className = 'insight-entry';
-        div.innerHTML = `
-            <input type="text" class="insight-title" placeholder="כותרת התובנה (אופציונלי)">
-            <textarea class="insight-input" placeholder="כתוב כאן את התובנה..."></textarea>
-            <div class="audio-controls">
-                <button class="start-record-btn secondary-button">התחל הקלטה</button>
-                <button class="stop-record-btn secondary-button" disabled>עצור הקלטה</button>
-                <button class="transcribe-btn secondary-button" disabled>תמלל הקלטה</button>
-            </div>
-            <audio class="audio-player" controls style="display: none;"></audio>
-        `;
-        insightsContainerInner.appendChild(div);
-
-        setupAudioRecording(div);
-    }
-
-    // התקנת אירועי אודיו בכל רובריקה
-    function setupAudioRecording(insightDiv) {
-        const startRecordBtn = insightDiv.querySelector('.start-record-btn');
-        const stopRecordBtn = insightDiv.querySelector('.stop-record-btn');
-        const transcribeBtn = insightDiv.querySelector('.transcribe-btn');
-        const audioPlayer = insightDiv.querySelector('.audio-player');
-
-        let mediaRecorder;
-        let chunks = [];
-
-        // התחלת הקלטה
-        startRecordBtn.addEventListener('click', async () => {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                alert('הדפדפן שלך לא תומך בהקלטת אודיו.');
-                return;
-            }
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                chunks = [];
-                mediaRecorder.ondataavailable = (e) => {
-                    chunks.push(e.data);
-                };
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(chunks, { type: 'audio/ogg; codecs=opus' });
-                    const audioURL = URL.createObjectURL(blob);
-                    audioPlayer.src = audioURL;
-                    audioPlayer.style.display = 'block';
-                    audioPlayer.dataset.audioBlob = blob;
-                };
-
-                mediaRecorder.start();
-                startRecordBtn.disabled = true;
-                stopRecordBtn.disabled = false;
-                transcribeBtn.disabled = true;
-            } catch (err) {
-                alert('שגיאה בגישה למיקרופון: ' + err.message);
-            }
-        });
-
-        // עצירת הקלטה
-        stopRecordBtn.addEventListener('click', () => {
-            if (mediaRecorder && mediaRecorder.state === 'recording') {
-                mediaRecorder.stop();
-                startRecordBtn.disabled = false;
-                stopRecordBtn.disabled = true;
-                transcribeBtn.disabled = false;
-            }
-        });
-
-        // תמלול דמה
-        transcribeBtn.addEventListener('click', async () => {
-            alert('תמלול חי או על-ידי צד שרת אינו זמין כרגע. נעשה תמלול דמה.');
-            const textArea = insightDiv.querySelector('.insight-input');
-            textArea.value += '\n[תמלול דמה של ההקלטה]';
-        });
-    }
-
-    // הוספת רובריקה נוספת
-    addInsightButton.addEventListener('click', () => {
-        createInsightEntry();
+    // הקלטת אודיו
+    startRecordBtn.addEventListener('click', async () => {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert('הדפדפן שלך לא תומך בהקלטת אודיו.');
+            return;
+        }
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            chunks = [];
+            mediaRecorder.ondataavailable = (e) => {
+                chunks.push(e.data);
+            };
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(chunks, { type: 'audio/ogg; codecs=opus' });
+                const audioURL = URL.createObjectURL(blob);
+                newInsightAudio.src = audioURL;
+                newInsightAudio.style.display = 'block';
+                newInsightAudio.dataset.audioBlob = blob;
+            };
+            mediaRecorder.start();
+            startRecordBtn.disabled = true;
+            stopRecordBtn.disabled = false;
+        } catch (err) {
+            alert('שגיאה בגישה למיקרופון: ' + err.message);
+        }
     });
 
-    // שמירת כל התובנות
-    saveInsightButton.addEventListener('click', () => {
-        const insightEntries = insightsContainerInner.querySelectorAll('.insight-entry');
-        const allInsights = JSON.parse(localStorage.getItem('insights')) || [];
-
-        insightEntries.forEach(entry => {
-            const title = entry.querySelector('.insight-title').value.trim();
-            const content = entry.querySelector('.insight-input').value.trim();
-            const audioPlayer = entry.querySelector('.audio-player');
-            let audioBlob = audioPlayer.dataset.audioBlob || null;
-
-            if (!title && !content && !audioBlob) {
-                return; // רובריקה ריקה
-            }
-
-            // המרת אודיו ל-Base64 אם קיים
-            if (audioBlob) {
-                const reader = new FileReader();
-                reader.onload = (evt) => {
-                    const audioBase64 = evt.target.result;
-                    pushInsight(title, content, audioBase64);
-                    localStorage.setItem('insights', JSON.stringify(allInsights));
-                };
-                reader.readAsDataURL(audioBlob);
-            } else {
-                pushInsight(title, content, '');
-                localStorage.setItem('insights', JSON.stringify(allInsights));
-            }
-
-            function pushInsight(t, c, audio64) {
-                allInsights.push({
-                    title: t || 'תובנה חדשה',
-                    content: c,
-                    audio: audio64
-                });
-            }
-        });
-
-        alert('התובנות נשמרו בהצלחה!');
-        displayInsightsList(); // עדכון הרשימה
-        insightsContainerInner.innerHTML = ''; // ניקוי
-        createInsightEntry(); // תובנה חדשה ריקה
+    stopRecordBtn.addEventListener('click', () => {
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+            startRecordBtn.disabled = false;
+            stopRecordBtn.disabled = true;
+        }
     });
 
-    // הצגת רשימת התובנות
+    // שמירת תובנה חדשה
+    saveNewInsightBtn.addEventListener('click', () => {
+        const title = newInsightTitle.value.trim() || 'תובנה חדשה';
+        const content = newInsightContent.value.trim();
+        const audioBlob = newInsightAudio.dataset.audioBlob || null;
+
+        if (!title && !content && !audioBlob) {
+            alert('אין מידע לשמור.');
+            return;
+        }
+
+        const insights = JSON.parse(localStorage.getItem('insights')) || [];
+
+        // אם יש אודיו, נמיר אותו ל-Base64
+        if (audioBlob) {
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                const audioBase64 = evt.target.result;
+                pushInsight(title, content, audioBase64);
+                localStorage.setItem('insights', JSON.stringify(insights));
+                afterSavingInsight();
+            };
+            reader.readAsDataURL(audioBlob);
+        } else {
+            pushInsight(title, content, '');
+            localStorage.setItem('insights', JSON.stringify(insights));
+            afterSavingInsight();
+        }
+
+        function pushInsight(t, c, audio64) {
+            insights.push({
+                title: t || 'תובנה חדשה',
+                content: c,
+                audio: audio64
+            });
+        }
+
+        function afterSavingInsight() {
+            alert('התובנה נשמרה בהצלחה!');
+            newInsightTitle.value = '';
+            newInsightContent.value = '';
+            newInsightAudio.src = '';
+            newInsightAudio.style.display = 'none';
+            newInsightAudio.dataset.audioBlob = '';
+            startRecordBtn.disabled = false;
+            stopRecordBtn.disabled = true;
+            displayInsightsList();
+        }
+    });
+
+    // הצגת רשימת התובנות עם עריכה/מחיקה
     function displayInsightsList() {
         insightsList.innerHTML = '';
         const insights = JSON.parse(localStorage.getItem('insights')) || [];
@@ -572,15 +539,33 @@ document.addEventListener('DOMContentLoaded', function () {
             title.textContent = `כותרת: ${insight.title || 'תובנה חדשה'}`;
             wrapper.appendChild(title);
 
+            // כפתור הצגת התובנה במלואה
             const showFullBtn = document.createElement('button');
-            showFullBtn.textContent = 'הצג תובנה';
+            showFullBtn.textContent = 'הצג/ערוך תובנה';
             showFullBtn.className = 'secondary-button';
             showFullBtn.style.marginLeft = '10px';
 
+            // כפתור מחיקה
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'מחק';
+            deleteBtn.className = 'delete-insight-btn secondary-button';
+
+            // עריכה: נייצר div נפרד
             const insightDiv = document.createElement('div');
             insightDiv.style.display = 'none';
             insightDiv.style.marginTop = '10px';
-            insightDiv.innerHTML = `<p>${insight.content || ''}</p>`;
+
+            const editableTitle = document.createElement('input');
+            editableTitle.type = 'text';
+            editableTitle.value = insight.title;
+            editableTitle.className = 'insight-title';
+            insightDiv.appendChild(editableTitle);
+
+            const editableContent = document.createElement('textarea');
+            editableContent.className = 'insight-input';
+            editableContent.value = insight.content;
+            editableContent.style.marginTop = '10px';
+            insightDiv.appendChild(editableContent);
 
             if (insight.audio) {
                 const audio = document.createElement('audio');
@@ -591,11 +576,41 @@ document.addEventListener('DOMContentLoaded', function () {
                 insightDiv.appendChild(audio);
             }
 
+            // כפתור שמירה לאחר עריכה
+            const saveEditBtn = document.createElement('button');
+            saveEditBtn.textContent = 'שמור עריכה';
+            saveEditBtn.className = 'secondary-button';
+            saveEditBtn.style.marginTop = '10px';
+
+            insightDiv.appendChild(saveEditBtn);
+
+            // הצגה/הסתרת תובנה
             showFullBtn.addEventListener('click', () => {
                 insightDiv.style.display = (insightDiv.style.display === 'none') ? 'block' : 'none';
             });
 
+            // מחיקת תובנה
+            deleteBtn.addEventListener('click', () => {
+                if (confirm('האם למחוק את התובנה?')) {
+                    insights.splice(idx, 1);
+                    localStorage.setItem('insights', JSON.stringify(insights));
+                    displayInsightsList();
+                }
+            });
+
+            // שמירת עריכה
+            saveEditBtn.addEventListener('click', () => {
+                const newTitle = editableTitle.value.trim() || 'תובנה חדשה';
+                const newContent = editableContent.value.trim();
+                insights[idx].title = newTitle;
+                insights[idx].content = newContent;
+                localStorage.setItem('insights', JSON.stringify(insights));
+                alert('התובנה נערכה בהצלחה!');
+                displayInsightsList();
+            });
+
             wrapper.appendChild(showFullBtn);
+            wrapper.appendChild(deleteBtn);
             wrapper.appendChild(insightDiv);
 
             insightsList.appendChild(wrapper);
@@ -671,9 +686,10 @@ document.addEventListener('DOMContentLoaded', function () {
         URL.revokeObjectURL(url);
     });
 
-    //---------------------------- תזכורות (עדיין מוגבל) ----------------------------//
+    //---------------------------- תזכורות (מינימלי) ----------------------------//
     function setupReminderSettings() {
-        // השארתי כקוד ריק/מקורי
+        const reminderSettings = document.getElementById('reminder-settings');
+        reminderSettings.innerHTML = '<p>כאן אמור להיות הקוד לתזכורות יומיות (מינימלי).</p>';
     }
     function requestNotificationPermission() { }
     function saveReminders() { }
