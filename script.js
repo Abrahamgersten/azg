@@ -12,7 +12,9 @@ if ('serviceWorker' in navigator) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    // --------------------------------------------------------------------------------
     // אלמנטים קיימים לתודות
+    // --------------------------------------------------------------------------------
     const entriesContainer = document.getElementById('entries');
     const saveButton = document.getElementById('save-button');
     const currentDateElement = document.getElementById('current-date');
@@ -40,7 +42,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const setRemindersLink = document.getElementById('set-reminders');
     const viewAllDidYouKnowLink = document.getElementById('view-all-did-you-know');
     const viewInsightsLink = document.getElementById('view-insights');
-    const downloadThanksWordFromMenu = document.getElementById('download-thanks-word'); // כפתור הורדת התודות בוורד
+    
+    // כפתורי הורדות בתפריט
+    const downloadThanksWordMenu = document.getElementById('download-thanks-word');
+    const downloadAllInsightsMenu = document.getElementById('download-all-insights');
 
     // הידעת
     const didYouKnowCarousel = document.getElementById('did-you-know-carousel');
@@ -404,46 +409,93 @@ document.addEventListener('DOMContentLoaded', function () {
         displayAllDidYouKnow();
     });
 
-    // כפתור הורדת תודות (Word) מהתפריט
-    downloadThanksWordFromMenu?.addEventListener('click', (e) => {
+    // הורדת תודות כ-Word עם רווח של 2 שורות בין תודות ומעבר עמוד בין ימים
+    downloadThanksWordMenu?.addEventListener('click', (e) => {
         e.preventDefault();
         downloadThanksAsWord();
     });
 
     function downloadThanksAsWord() {
-        // נאסוף את כל התודות מכל התאריכים
-        const allThanks = [];
+        // איסוף התודות לפי ימים
+        const allKeys = [];
         for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (isValidDate(key)) {
-                const entries = JSON.parse(localStorage.getItem(key));
-                if (entries && entries.length) {
-                    entries.forEach((entry, idx) => {
-                        if (entry) {
-                            allThanks.push({
-                                date: key,
-                                index: idx + 1,
-                                text: entry.text,
-                                category: entry.category || ''
-                            });
-                        }
-                    });
-                }
+            const k = localStorage.key(i);
+            if (isValidDate(k)) {
+                allKeys.push(k);
             }
         }
-        if (!allThanks.length) {
+        allKeys.sort((a, b) => new Date(a.split('.').reverse().join('-')) - new Date(b.split('.').reverse().join('-')));
+
+        if (!allKeys.length) {
             alert('לא נמצאו תודות להורדה.');
             return;
         }
-        let docContent = 'כל התודות שנכתבו:\n\n';
-        allThanks.forEach((item, index) => {
-            docContent += `${index + 1}. [${item.date}] (קטגוריה: ${item.category}) - ${item.text}\n`;
+
+        // נתחיל ב-docContent
+        let docContent = '';
+        docContent += `@font-face {\n`;
+        docContent += `  font-family: "Rubik";\n`;
+        docContent += `}\n\n`;
+        docContent += `תודות שונות שנכתבו:\n\n`;
+
+        allKeys.forEach((key, index) => {
+            const entries = JSON.parse(localStorage.getItem(key));
+            docContent += `יום ${key}:\n\n`;
+
+            entries.forEach((entry, idx) => {
+                if (entry && entry.text) {
+                    docContent += `${idx + 1}. ${entry.text} (קטגוריה: ${entry.category || 'ללא'})\n\n`; 
+                    docContent += "\n"; // 2 שורות רווח
+                }
+            });
+
+            // מעבר עמוד אחרי כל יום:
+            if (index < allKeys.length - 1) {
+                docContent += "\f"; // form feed - מעבר עמוד
+            }
         });
-        const blob = new Blob([docContent], { type: 'application/msword' });
+
+        const blob = new Blob([docContent], { type: 'application/msword;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
         link.download = 'תודות.doc';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    // הורדת תובנות (Word) עם 2 שורות בין תובנות
+    downloadAllInsightsMenu?.addEventListener('click', (e) => {
+        e.preventDefault();
+        downloadAllInsightsAsWord();
+    });
+
+    function downloadAllInsightsAsWord() {
+        const insights = JSON.parse(localStorage.getItem('insights')) || [];
+        if (!insights.length) {
+            alert('לא נמצאו תובנות להורדה.');
+            return;
+        }
+
+        let docContent = '';
+        docContent += `@font-face {\n`;
+        docContent += `  font-family: "Rubik";\n`;
+        docContent += `}\n\n`;
+        docContent += `כל התובנות:\n\n`;
+
+        insights.forEach((item, idx) => {
+            docContent += `תובנה ${idx + 1} - כותרת: ${item.title}\n`;
+            docContent += `${item.content}\n\n`;
+            docContent += "\n"; // 2 שורות רווח
+        });
+
+        const blob = new Blob([docContent], { type: 'application/msword;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'תובנות.doc';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -520,7 +572,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // שמירת תובנה חדשה
+    // שמירת תובנה חדשה (תיקון לשמירת האודיו "ברמה 9")
     saveNewInsightBtn.addEventListener('click', () => {
         const title = newInsightTitle.value.trim() || 'תובנה חדשה';
         const content = newInsightContent.value.trim();
@@ -540,8 +592,12 @@ document.addEventListener('DOMContentLoaded', function () {
             reader.onload = (evt) => {
                 const audioBase64 = evt.target.result;
                 pushInsight(title, content, audioBase64);
+                // שמירת המערך
                 localStorage.setItem('insights', JSON.stringify(insights));
                 afterSavingInsight();
+            };
+            reader.onerror = (err) => {
+                alert('שגיאה בקריאת ההקלטה: ' + err.message);
             };
             reader.readAsDataURL(audioBlob);
         } else {
@@ -559,7 +615,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         function afterSavingInsight() {
-            alert('התובנה נשמרה בהצלחה!');
+            alert('התובנה נשמרה בהצלחה עם ההקלטה!');
             newInsightTitle.value = '';
             newInsightContent.value = '';
             newInsightAudio.src = '';
@@ -571,7 +627,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // הצגת רשימת התובנות (כותרת + כפתורי "הצג" ו"מחק", ומתחת לתובנה "ערוך תובנה")
+    // הצגת רשימת התובנות
     function displayInsightsList() {
         insightsList.innerHTML = '';
         const insights = JSON.parse(localStorage.getItem('insights')) || [];
@@ -584,34 +640,40 @@ document.addEventListener('DOMContentLoaded', function () {
             const wrapper = document.createElement('div');
             wrapper.style.marginBottom = '15px';
 
-            // יצוג של כותרת
+            // שורה אחת לכותרת + כפתורים
+            const titleRow = document.createElement('div');
+            titleRow.style.display = 'flex';
+            titleRow.style.alignItems = 'center';
+
             const titleEl = document.createElement('strong');
             titleEl.textContent = `כותרת: ${insight.title}`;
-            wrapper.appendChild(titleEl);
+            titleEl.style.fontSize = '1.1em';
 
-            // כפתור הצג
             const showBtn = document.createElement('button');
             showBtn.textContent = 'הצג';
             showBtn.className = 'secondary-button';
             showBtn.style.marginLeft = '10px';
+            showBtn.style.fontSize = '14px';
 
-            // כפתור מחיקה
             const deleteBtn = document.createElement('button');
             deleteBtn.textContent = 'מחק';
             deleteBtn.className = 'secondary-button';
-            deleteBtn.style.marginLeft = '10px';
+            deleteBtn.style.marginLeft = '5px';
+            deleteBtn.style.fontSize = '14px';
 
-            // חלק התובנה עצמו
+            titleRow.appendChild(titleEl);
+            titleRow.appendChild(showBtn);
+            titleRow.appendChild(deleteBtn);
+
+            // התוכן עצמו, מוסתר
             const insightDiv = document.createElement('div');
             insightDiv.style.display = 'none';
             insightDiv.style.marginTop = '10px';
 
-            // הטקסט עצמו
             const contentP = document.createElement('p');
             contentP.textContent = insight.content;
             insightDiv.appendChild(contentP);
 
-            // אם יש אודיו
             if (insight.audio) {
                 const audio = document.createElement('audio');
                 audio.controls = true;
@@ -621,11 +683,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 insightDiv.appendChild(audio);
             }
 
-            // כפתור ערוך מתחת לתובנה
+            // כפתור עריכה
             const editBtn = document.createElement('button');
             editBtn.textContent = 'ערוך תובנה';
             editBtn.className = 'secondary-button';
             editBtn.style.marginTop = '10px';
+            editBtn.style.fontSize = '14px';
 
             editBtn.addEventListener('click', () => {
                 editInsight(idx);
@@ -633,12 +696,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
             insightDiv.appendChild(editBtn);
 
-            // הצגת התובנה
+            // כפתור הצג
             showBtn.addEventListener('click', () => {
                 insightDiv.style.display = (insightDiv.style.display === 'none') ? 'block' : 'none';
             });
 
-            // מחיקת התובנה
+            // כפתור מחיקה
             deleteBtn.addEventListener('click', () => {
                 if (confirm('האם למחוק את התובנה?')) {
                     insights.splice(idx, 1);
@@ -647,8 +710,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
 
-            wrapper.appendChild(showBtn);
-            wrapper.appendChild(deleteBtn);
+            wrapper.appendChild(titleRow);
             wrapper.appendChild(insightDiv);
 
             insightsList.appendChild(wrapper);
@@ -660,9 +722,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const insightObj = insights[index];
         if (!insightObj) return;
 
-        // פתיחת מודאל עריכה קטן/זמני? אפשר פשוט לשנות במקום
         const newTitle = prompt('ערוך כותרת:', insightObj.title);
-        if (newTitle === null) return; // ביטול
+        if (newTitle === null) return; 
 
         const newContent = prompt('ערוך תוכן התובנה:', insightObj.content);
         if (newContent === null) return;
@@ -675,18 +736,8 @@ document.addEventListener('DOMContentLoaded', function () {
         displayInsightsList();
     }
 
-    // ---------------- הורדת קובץ תודות מהתפריט (כבר מומש) ----------------
-    // [downloadThanksAsWord] למעלה
-
-    //---------------------------- תזכורות (מינימלי) ----------------------------//
+    //---------------------------- תזכורות (מינימלי + עיצוב) ----------------------------//
     function setupReminderSettings() {
-        const reminderSettings = document.getElementById('reminder-settings');
-        reminderSettings.innerHTML = `
-            <label>בחר שעה יומית לתזכורת:</label>
-            <input type="time" id="daily-reminder-time">
-            <button id="save-daily-reminder" class="primary-button">שמור תזכורת</button>
-        `;
-
         const dailyReminderTimeInput = document.getElementById('daily-reminder-time');
         const saveDailyReminderBtn = document.getElementById('save-daily-reminder');
 
@@ -703,8 +754,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             localStorage.setItem('dailyReminderTime', chosenTime);
             alert('התזכורת נשמרה בהצלחה!');
-
-            // ננסה "לדמות" תזכורת יומית
             scheduleDailyReminder(chosenTime);
         });
     }
@@ -716,10 +765,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function scheduleDailyReminder(chosenTime) {
-        // ניקוי setTimeout קודם אם תרצה
+        // הדמיית תזכורת
         requestNotificationPermission();
-
-        // חישוב difference
         const [hh, mm] = chosenTime.split(':').map(Number);
         const now = new Date();
         let reminderTime = new Date();
@@ -732,18 +779,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
         setTimeout(() => {
             if (Notification.permission === 'granted') {
-                // נדמה תזכורת
                 new Notification('תזכורת יומית:', {
-                    body: 'אל תשכח להודות/לכתוב תובנה!',
+                    body: 'אל תשכח להודות או לכתוב תובנה!',
                     tag: 'daily-reminder'
                 });
             }
-            // נקבע תזמון חדש למחר
+            // נתזמן למחר שוב
             scheduleDailyReminder(chosenTime);
         }, delay);
     }
 
-    function saveReminders() {}
     function initializeReminders() {
         const chosenTime = localStorage.getItem('dailyReminderTime');
         if (chosenTime) {
