@@ -1,4 +1,4 @@
-// רישום Service Worker (גרסה משופרת לטיפול בתזכורות בסיסיות)
+// רישום Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')
@@ -41,9 +41,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const viewPreviousThanksLink = document.getElementById('view-previous-thanks');
     const setRemindersLink = document.getElementById('set-reminders');
     const viewAllDidYouKnowLink = document.getElementById('view-all-did-you-know');
+    const recordInsightsLink = document.getElementById('record-insights');
     const viewInsightsLink = document.getElementById('view-insights');
-    
-    // כפתורי הורדות בתפריט
     const downloadThanksWordMenu = document.getElementById('download-thanks-word');
     const downloadAllInsightsMenu = document.getElementById('download-all-insights');
 
@@ -86,7 +85,9 @@ document.addEventListener('DOMContentLoaded', function () {
     ];
     let currentLevel = 5;
 
-    //---------------------------- תודות ----------------------------//
+    // -------------------------------------------------------------------------
+    // תודות
+    // -------------------------------------------------------------------------
     function createInputFields(level) {
         const savedEntries = JSON.parse(localStorage.getItem(dateKey)) || [];
         entriesContainer.innerHTML = '';
@@ -203,7 +204,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    //---------------------------- הידעת ----------------------------//
+    // -------------------------------------------------------------------------
+    // הידעת
+    // -------------------------------------------------------------------------
     function displayDidYouKnow() {
         didYouKnowCarousel.innerHTML = '';
         const dayIndex = today.getDate() % didYouKnowFacts.length;
@@ -224,7 +227,9 @@ document.addEventListener('DOMContentLoaded', function () {
         history.pushState({ modalOpen: true }, null, '');
     }
 
-    //---------------------------- רמת התודות ----------------------------//
+    // -------------------------------------------------------------------------
+    // רמת התודות
+    // -------------------------------------------------------------------------
     function checkAndPrompt(currentFilledCount) {
         const level = levels.find(l => l.max === currentLevel);
         if (currentFilledCount >= currentLevel && level && level.next) {
@@ -250,7 +255,9 @@ document.addEventListener('DOMContentLoaded', function () {
         history.back();
     });
 
-    //---------------------------- מודאלים והיסטוריה ----------------------------//
+    // -------------------------------------------------------------------------
+    // מודאלים והיסטוריה
+    // -------------------------------------------------------------------------
     window.addEventListener('popstate', () => {
         closeAllModals();
     });
@@ -279,7 +286,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    //---------------------------- תאריך עברי וכו' ----------------------------//
+    // -------------------------------------------------------------------------
+    // תאריך עברי וכו'
+    // -------------------------------------------------------------------------
     function displayCurrentDate() {
         const daysOfWeek = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
         const dayOfWeek = `היום יום ${daysOfWeek[today.getDay()]}`;
@@ -305,7 +314,9 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    //---------------------------- סינון תודות ----------------------------//
+    // -------------------------------------------------------------------------
+    // סינון תודות
+    // -------------------------------------------------------------------------
     categoryFilter.addEventListener('change', applyCategoryFilter);
     function applyCategoryFilter() {
         const selectedCategory = categoryFilter.value;
@@ -321,7 +332,11 @@ document.addEventListener('DOMContentLoaded', function () {
             const entries = JSON.parse(localStorage.getItem(dateKey)) || [];
             entries.forEach(entry => {
                 if (entry && entry.text) {
-                    allEntries.push({ date: dateKey, text: entry.text, category: entry.category || '' });
+                    allEntries.push({
+                        date: dateKey,
+                        text: entry.text,
+                        category: entry.category || ''
+                    });
                 }
             });
         } else {
@@ -331,7 +346,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     const entries = JSON.parse(localStorage.getItem(key));
                     entries.forEach(entry => {
                         if (entry && entry.category === selectedCategory) {
-                            allEntries.push({ date: key, text: entry.text, category: entry.category || '' });
+                            allEntries.push({
+                                date: key,
+                                text: entry.text,
+                                category: entry.category || ''
+                            });
                         }
                     });
                 }
@@ -351,7 +370,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    //---------------------------- אתחול ----------------------------//
+    // -------------------------------------------------------------------------
+    // אתחול
+    // -------------------------------------------------------------------------
     function initializeApp() {
         displayCurrentDate();
         const savedEntries = JSON.parse(localStorage.getItem(dateKey)) || [];
@@ -379,7 +400,9 @@ document.addEventListener('DOMContentLoaded', function () {
     initializeApp();
     saveButton.addEventListener('click', saveEntries);
 
-    //---------------------------- תפריט ----------------------------//
+    // -------------------------------------------------------------------------
+    // תפריט
+    // -------------------------------------------------------------------------
     menuButton.addEventListener('click', (e) => {
         e.stopPropagation();
         dropdownContent.style.display = (dropdownContent.style.display === 'block') ? 'none' : 'block';
@@ -409,14 +432,242 @@ document.addEventListener('DOMContentLoaded', function () {
         displayAllDidYouKnow();
     });
 
-    // הורדת תודות כ-Word עם רווח של 2 שורות בין תודות ומעבר עמוד בין ימים
+    // רובריקה חדשה: הקלטת תובנה
+    const recordInsightModal = document.getElementById('record-insight-modal');
+    const audioInsightTitle = document.getElementById('audio-insight-title');
+    const startRecordAudioBtn = document.getElementById('start-record-audio');
+    const stopRecordAudioBtn = document.getElementById('stop-record-audio');
+    const audioInsightPlayer = document.getElementById('audio-insight-player');
+    const saveAudioInsightBtn = document.getElementById('save-audio-insight');
+    const audioInsightsList = document.getElementById('audio-insights-list');
+
+    let audioRecorder;
+    let audioChunks = [];
+
+    recordInsightsLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        openRecordInsightModal();
+    });
+
+    function openRecordInsightModal() {
+        audioInsightTitle.value = '';
+        audioInsightPlayer.src = '';
+        audioInsightPlayer.style.display = 'none';
+        audioInsightPlayer.dataset.audioBlob = '';
+        startRecordAudioBtn.disabled = false;
+        stopRecordAudioBtn.disabled = true;
+        audioChunks = [];
+
+        displayAudioInsights();
+        recordInsightModal.style.display = 'flex';
+        history.pushState({ modalOpen: true }, null, '');
+    }
+
+    // התחלת הקלטה
+    startRecordAudioBtn.addEventListener('click', async () => {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert('הדפדפן לא תומך בהקלטת אודיו.');
+            return;
+        }
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            audioRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            audioRecorder.ondataavailable = (e) => {
+                audioChunks.push(e.data);
+            };
+            audioRecorder.onstop = () => {
+                const blob = new Blob(audioChunks, { type: 'audio/ogg; codecs=opus' });
+                const audioURL = URL.createObjectURL(blob);
+                audioInsightPlayer.src = audioURL;
+                audioInsightPlayer.style.display = 'block';
+                audioInsightPlayer.dataset.audioBlob = blob;
+            };
+            audioRecorder.start();
+            startRecordAudioBtn.disabled = true;
+            stopRecordAudioBtn.disabled = false;
+        } catch (err) {
+            alert('שגיאה בגישה למיקרופון: ' + err.message);
+        }
+    });
+
+    // עצירת הקלטה
+    stopRecordAudioBtn.addEventListener('click', () => {
+        if (audioRecorder && audioRecorder.state === 'recording') {
+            audioRecorder.stop();
+            startRecordAudioBtn.disabled = false;
+            stopRecordAudioBtn.disabled = true;
+        }
+    });
+
+    // שמירת ההקלטה
+    saveAudioInsightBtn.addEventListener('click', () => {
+        const title = audioInsightTitle.value.trim() || 'תובנה מוקלטת';
+        const audioBlob = audioInsightPlayer.dataset.audioBlob || null;
+
+        if (!title && !audioBlob) {
+            alert('לא הוזן מידע ואין הקלטה.');
+            return;
+        }
+
+        const audioInsights = JSON.parse(localStorage.getItem('audioInsights')) || [];
+
+        if (audioBlob) {
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                const audioBase64 = evt.target.result;
+                pushAudioInsight(title, audioBase64);
+                localStorage.setItem('audioInsights', JSON.stringify(audioInsights));
+                afterSaveAudio();
+            };
+            reader.onerror = (err) => {
+                alert('שגיאה בקריאת ההקלטה: ' + err.message);
+            };
+            reader.readAsDataURL(audioBlob);
+        } else {
+            // אין blob? רק כותרת?
+            pushAudioInsight(title, '');
+            localStorage.setItem('audioInsights', JSON.stringify(audioInsights));
+            afterSaveAudio();
+        }
+
+        function pushAudioInsight(t, audio64) {
+            audioInsights.push({
+                title: t,
+                audio: audio64
+            });
+        }
+
+        function afterSaveAudio() {
+            alert('התובנה הקולית נשמרה בהצלחה!');
+            audioInsightTitle.value = '';
+            audioInsightPlayer.src = '';
+            audioInsightPlayer.style.display = 'none';
+            audioInsightPlayer.dataset.audioBlob = '';
+            startRecordAudioBtn.disabled = false;
+            stopRecordAudioBtn.disabled = true;
+            displayAudioInsights();
+        }
+    });
+
+    // הצגת הקלטות שנשמרו
+    function displayAudioInsights() {
+        audioInsightsList.innerHTML = '';
+        const audioInsights = JSON.parse(localStorage.getItem('audioInsights')) || [];
+        if (!audioInsights.length) {
+            audioInsightsList.innerHTML = '<p>אין הקלטות שנשמרו.</p>';
+            return;
+        }
+        audioInsights.forEach((item, idx) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'insight-entry';
+
+            // שורה אחת: כותרת + כפתור מחיקה
+            const rowDiv = document.createElement('div');
+            rowDiv.style.display = 'flex';
+            rowDiv.style.alignItems = 'center';
+
+            const titleEl = document.createElement('strong');
+            titleEl.textContent = `כותרת: ${item.title}`;
+            titleEl.style.fontSize = '1.1em';
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'מחק';
+            deleteBtn.className = 'secondary-button';
+            deleteBtn.style.fontSize = '12px';
+            deleteBtn.style.marginLeft = '10px';
+
+            deleteBtn.addEventListener('click', () => {
+                if (confirm('האם למחוק הקלטה זו?')) {
+                    audioInsights.splice(idx, 1);
+                    localStorage.setItem('audioInsights', JSON.stringify(audioInsights));
+                    displayAudioInsights();
+                }
+            });
+
+            rowDiv.appendChild(titleEl);
+            rowDiv.appendChild(deleteBtn);
+
+            wrapper.appendChild(rowDiv);
+
+            // אם יש אודיו
+            if (item.audio) {
+                const audio = document.createElement('audio');
+                audio.controls = true;
+                audio.style.display = 'block';
+                audio.style.marginTop = '10px';
+                audio.src = item.audio;
+                wrapper.appendChild(audio);
+            }
+
+            audioInsightsList.appendChild(wrapper);
+        });
+    }
+
+    // -------------------------------------------------------------------------
+    // תובנות (טקסט)
+    // -------------------------------------------------------------------------
+    const insightsModal = document.getElementById('insights-modal');
+    const newInsightTitle = document.getElementById('new-insight-title');
+    const newInsightContent = document.getElementById('new-insight-content');
+    const saveNewInsightBtn = document.getElementById('save-new-insight');
+    const insightsList = document.getElementById('insights-list');
+
+    saveNewInsightBtn.addEventListener('click', () => {
+        const title = newInsightTitle.value.trim() || 'תובנה חדשה';
+        const content = newInsightContent.value.trim();
+
+        if (!title && !content) {
+            alert('אין מה לשמור.');
+            return;
+        }
+
+        const insights = JSON.parse(localStorage.getItem('insights')) || [];
+        insights.push({
+            title,
+            content
+        });
+        localStorage.setItem('insights', JSON.stringify(insights));
+        alert('תובנת הטקסט נשמרה בהצלחה!');
+
+        newInsightTitle.value = '';
+        newInsightContent.value = '';
+        displayInsightsList();
+    });
+
+    function displayInsightsList() {
+        insightsList.innerHTML = '';
+        const insights = JSON.parse(localStorage.getItem('insights')) || [];
+        if (!insights.length) {
+            insightsList.innerHTML = '<p>עדיין לא נכתבו תובנות (טקסט).</p>';
+            return;
+        }
+        insights.forEach((insight, idx) => {
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'insight-entry';
+
+            const titleEl = document.createElement('strong');
+            titleEl.textContent = `כותרת: ${insight.title}`;
+            entryDiv.appendChild(titleEl);
+
+            const contentP = document.createElement('p');
+            contentP.textContent = insight.content;
+            contentP.style.marginTop = '10px';
+            entryDiv.appendChild(contentP);
+
+            insightsList.appendChild(entryDiv);
+        });
+    }
+
+    // -------------------------------------------------------------------------
+    // הורדת התודות כ-Word (עם רווחים ומעברי עמוד)
+    // -------------------------------------------------------------------------
     downloadThanksWordMenu?.addEventListener('click', (e) => {
         e.preventDefault();
         downloadThanksAsWord();
     });
 
     function downloadThanksAsWord() {
-        // איסוף התודות לפי ימים
         const allKeys = [];
         for (let i = 0; i < localStorage.length; i++) {
             const k = localStorage.key(i);
@@ -424,14 +675,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 allKeys.push(k);
             }
         }
-        allKeys.sort((a, b) => new Date(a.split('.').reverse().join('-')) - new Date(b.split('.').reverse().join('-')));
-
         if (!allKeys.length) {
             alert('לא נמצאו תודות להורדה.');
             return;
         }
+        allKeys.sort((a, b) => new Date(a.split('.').reverse().join('-')) - new Date(b.split('.').reverse().join('-')));
 
-        // נתחיל ב-docContent
         let docContent = '';
         docContent += `@font-face {\n`;
         docContent += `  font-family: "Rubik";\n`;
@@ -444,14 +693,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
             entries.forEach((entry, idx) => {
                 if (entry && entry.text) {
-                    docContent += `${idx + 1}. ${entry.text} (קטגוריה: ${entry.category || 'ללא'})\n\n`; 
-                    docContent += "\n"; // 2 שורות רווח
+                    docContent += `${idx + 1}. ${entry.text} (קטגוריה: ${entry.category || 'ללא'})\n\n`;
+                    docContent += "\n"; // רווח של 2 שורות
                 }
             });
 
-            // מעבר עמוד אחרי כל יום:
             if (index < allKeys.length - 1) {
-                docContent += "\f"; // form feed - מעבר עמוד
+                docContent += "\f"; // form feed
             }
         });
 
@@ -466,7 +714,7 @@ document.addEventListener('DOMContentLoaded', function () {
         URL.revokeObjectURL(url);
     }
 
-    // הורדת תובנות (Word) עם 2 שורות בין תובנות
+    // הורדת התובנות (טקסט) כ-Word
     downloadAllInsightsMenu?.addEventListener('click', (e) => {
         e.preventDefault();
         downloadAllInsightsAsWord();
@@ -475,7 +723,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function downloadAllInsightsAsWord() {
         const insights = JSON.parse(localStorage.getItem('insights')) || [];
         if (!insights.length) {
-            alert('לא נמצאו תובנות להורדה.');
+            alert('לא נמצאו תובנות (טקסט) להורדה.');
             return;
         }
 
@@ -483,7 +731,7 @@ document.addEventListener('DOMContentLoaded', function () {
         docContent += `@font-face {\n`;
         docContent += `  font-family: "Rubik";\n`;
         docContent += `}\n\n`;
-        docContent += `כל התובנות:\n\n`;
+        docContent += `כל התובנות הטקסט:\n\n`;
 
         insights.forEach((item, idx) => {
             docContent += `תובנה ${idx + 1} - כותרת: ${item.title}\n`;
@@ -502,241 +750,9 @@ document.addEventListener('DOMContentLoaded', function () {
         URL.revokeObjectURL(url);
     }
 
-    //---------------------------- ניהול תובנות ----------------------------//
-    const insightsModal = document.getElementById('insights-modal');
-    const newInsightTitle = document.getElementById('new-insight-title');
-    const newInsightContent = document.getElementById('new-insight-content');
-    const newInsightAudio = document.getElementById('new-insight-audio');
-    const startRecordBtn = document.getElementById('start-record-btn');
-    const stopRecordBtn = document.getElementById('stop-record-btn');
-    const saveNewInsightBtn = document.getElementById('save-new-insight');
-    const insightsList = document.getElementById('insights-list');
-
-    let mediaRecorder;
-    let chunks = [];
-
-    viewInsightsLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        openInsightsModal();
-    });
-
-    function openInsightsModal() {
-        // איפוס שדות התובנה
-        newInsightTitle.value = '';
-        newInsightContent.value = '';
-        newInsightAudio.src = '';
-        newInsightAudio.style.display = 'none';
-        newInsightAudio.dataset.audioBlob = '';
-        startRecordBtn.disabled = false;
-        stopRecordBtn.disabled = true;
-        chunks = [];
-
-        displayInsightsList();
-        insightsModal.style.display = 'flex';
-        history.pushState({ modalOpen: true }, null, '');
-    }
-
-    // הקלטת אודיו
-    startRecordBtn.addEventListener('click', async () => {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            alert('הדפדפן שלך לא תומך בהקלטת אודיו.');
-            return;
-        }
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            chunks = [];
-            mediaRecorder.ondataavailable = (e) => {
-                chunks.push(e.data);
-            };
-            mediaRecorder.onstop = () => {
-                const blob = new Blob(chunks, { type: 'audio/ogg; codecs=opus' });
-                const audioURL = URL.createObjectURL(blob);
-                newInsightAudio.src = audioURL;
-                newInsightAudio.style.display = 'block';
-                newInsightAudio.dataset.audioBlob = blob;
-            };
-            mediaRecorder.start();
-            startRecordBtn.disabled = true;
-            stopRecordBtn.disabled = false;
-        } catch (err) {
-            alert('שגיאה בגישה למיקרופון: ' + err.message);
-        }
-    });
-
-    stopRecordBtn.addEventListener('click', () => {
-        if (mediaRecorder && mediaRecorder.state === 'recording') {
-            mediaRecorder.stop();
-            startRecordBtn.disabled = false;
-            stopRecordBtn.disabled = true;
-        }
-    });
-
-    // שמירת תובנה חדשה (תיקון לשמירת האודיו "ברמה 9")
-    saveNewInsightBtn.addEventListener('click', () => {
-        const title = newInsightTitle.value.trim() || 'תובנה חדשה';
-        const content = newInsightContent.value.trim();
-        const audioBlob = newInsightAudio.dataset.audioBlob || null;
-
-        // אם לא הוקלד כלום ולא הוקלט כלום
-        if (!title && !content && !audioBlob) {
-            alert('אין מידע לשמור.');
-            return;
-        }
-
-        const insights = JSON.parse(localStorage.getItem('insights')) || [];
-
-        if (audioBlob) {
-            // אם יש אודיו, נמיר אותו ל-Base64
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-                const audioBase64 = evt.target.result;
-                pushInsight(title, content, audioBase64);
-                // שמירת המערך
-                localStorage.setItem('insights', JSON.stringify(insights));
-                afterSavingInsight();
-            };
-            reader.onerror = (err) => {
-                alert('שגיאה בקריאת ההקלטה: ' + err.message);
-            };
-            reader.readAsDataURL(audioBlob);
-        } else {
-            pushInsight(title, content, '');
-            localStorage.setItem('insights', JSON.stringify(insights));
-            afterSavingInsight();
-        }
-
-        function pushInsight(t, c, audio64) {
-            insights.push({
-                title: t || 'תובנה חדשה',
-                content: c,
-                audio: audio64
-            });
-        }
-
-        function afterSavingInsight() {
-            alert('התובנה נשמרה בהצלחה עם ההקלטה!');
-            newInsightTitle.value = '';
-            newInsightContent.value = '';
-            newInsightAudio.src = '';
-            newInsightAudio.style.display = 'none';
-            newInsightAudio.dataset.audioBlob = '';
-            startRecordBtn.disabled = false;
-            stopRecordBtn.disabled = true;
-            displayInsightsList();
-        }
-    });
-
-    // הצגת רשימת התובנות
-    function displayInsightsList() {
-        insightsList.innerHTML = '';
-        const insights = JSON.parse(localStorage.getItem('insights')) || [];
-        if (!insights.length) {
-            insightsList.innerHTML = '<p>עדיין לא נכתבו תובנות.</p>';
-            return;
-        }
-
-        insights.forEach((insight, idx) => {
-            const wrapper = document.createElement('div');
-            wrapper.style.marginBottom = '15px';
-
-            // שורה אחת לכותרת + כפתורים
-            const titleRow = document.createElement('div');
-            titleRow.style.display = 'flex';
-            titleRow.style.alignItems = 'center';
-
-            const titleEl = document.createElement('strong');
-            titleEl.textContent = `כותרת: ${insight.title}`;
-            titleEl.style.fontSize = '1.1em';
-
-            const showBtn = document.createElement('button');
-            showBtn.textContent = 'הצג';
-            showBtn.className = 'secondary-button';
-            showBtn.style.marginLeft = '10px';
-            showBtn.style.fontSize = '14px';
-
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = 'מחק';
-            deleteBtn.className = 'secondary-button';
-            deleteBtn.style.marginLeft = '5px';
-            deleteBtn.style.fontSize = '14px';
-
-            titleRow.appendChild(titleEl);
-            titleRow.appendChild(showBtn);
-            titleRow.appendChild(deleteBtn);
-
-            // התוכן עצמו, מוסתר
-            const insightDiv = document.createElement('div');
-            insightDiv.style.display = 'none';
-            insightDiv.style.marginTop = '10px';
-
-            const contentP = document.createElement('p');
-            contentP.textContent = insight.content;
-            insightDiv.appendChild(contentP);
-
-            if (insight.audio) {
-                const audio = document.createElement('audio');
-                audio.controls = true;
-                audio.style.display = 'block';
-                audio.style.marginTop = '10px';
-                audio.src = insight.audio;
-                insightDiv.appendChild(audio);
-            }
-
-            // כפתור עריכה
-            const editBtn = document.createElement('button');
-            editBtn.textContent = 'ערוך תובנה';
-            editBtn.className = 'secondary-button';
-            editBtn.style.marginTop = '10px';
-            editBtn.style.fontSize = '14px';
-
-            editBtn.addEventListener('click', () => {
-                editInsight(idx);
-            });
-
-            insightDiv.appendChild(editBtn);
-
-            // כפתור הצג
-            showBtn.addEventListener('click', () => {
-                insightDiv.style.display = (insightDiv.style.display === 'none') ? 'block' : 'none';
-            });
-
-            // כפתור מחיקה
-            deleteBtn.addEventListener('click', () => {
-                if (confirm('האם למחוק את התובנה?')) {
-                    insights.splice(idx, 1);
-                    localStorage.setItem('insights', JSON.stringify(insights));
-                    displayInsightsList();
-                }
-            });
-
-            wrapper.appendChild(titleRow);
-            wrapper.appendChild(insightDiv);
-
-            insightsList.appendChild(wrapper);
-        });
-    }
-
-    function editInsight(index) {
-        const insights = JSON.parse(localStorage.getItem('insights')) || [];
-        const insightObj = insights[index];
-        if (!insightObj) return;
-
-        const newTitle = prompt('ערוך כותרת:', insightObj.title);
-        if (newTitle === null) return; 
-
-        const newContent = prompt('ערוך תוכן התובנה:', insightObj.content);
-        if (newContent === null) return;
-
-        insightObj.title = newTitle.trim() || 'תובנה חדשה';
-        insightObj.content = newContent.trim();
-        localStorage.setItem('insights', JSON.stringify(insights));
-
-        alert('התובנה נערכה בהצלחה!');
-        displayInsightsList();
-    }
-
-    //---------------------------- תזכורות (מינימלי + עיצוב) ----------------------------//
+    // -------------------------------------------------------------------------
+    // תזכורות (מינימלי + עיצוב קל)
+    // -------------------------------------------------------------------------
     function setupReminderSettings() {
         const dailyReminderTimeInput = document.getElementById('daily-reminder-time');
         const saveDailyReminderBtn = document.getElementById('save-daily-reminder');
@@ -776,7 +792,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const delay = reminderTime - now;
-
         setTimeout(() => {
             if (Notification.permission === 'granted') {
                 new Notification('תזכורת יומית:', {
@@ -784,7 +799,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     tag: 'daily-reminder'
                 });
             }
-            // נתזמן למחר שוב
             scheduleDailyReminder(chosenTime);
         }, delay);
     }
