@@ -432,7 +432,110 @@ document.addEventListener('DOMContentLoaded', function () {
         displayAllDidYouKnow();
     });
 
-    // רובריקה חדשה: הקלטת תובנה
+    recordInsightsLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        openRecordInsightModal();
+    });
+
+    viewInsightsLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        openInsightsModal();
+    });
+
+    // -------------------------------------------------------------------------
+    // הורדת תודות כ-Word
+    // -------------------------------------------------------------------------
+    downloadThanksWordMenu?.addEventListener('click', (e) => {
+        e.preventDefault();
+        downloadThanksAsWord();
+    });
+
+    function downloadThanksAsWord() {
+        const allKeys = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (isValidDate(k)) {
+                allKeys.push(k);
+            }
+        }
+        if (!allKeys.length) {
+            alert('לא נמצאו תודות להורדה.');
+            return;
+        }
+        allKeys.sort((a, b) => new Date(a.split('.').reverse().join('-')) - new Date(b.split('.').reverse().join('-')));
+
+        let docContent = '';
+        docContent += `@font-face {\n`;
+        docContent += `  font-family: "Rubik";\n`;
+        docContent += `}\n\n`;
+        docContent += `תודות שונות שנכתבו:\n\n`;
+
+        allKeys.forEach((key, index) => {
+            const entries = JSON.parse(localStorage.getItem(key));
+            docContent += `יום ${key}:\n\n`;
+
+            entries.forEach((entry, idx) => {
+                if (entry && entry.text) {
+                    docContent += `${idx + 1}. ${entry.text} (קטגוריה: ${entry.category || 'ללא'})\n\n`;
+                    docContent += "\n"; // רווח של 2 שורות
+                }
+            });
+
+            if (index < allKeys.length - 1) {
+                docContent += "\f"; // form feed
+            }
+        });
+
+        const blob = new Blob([docContent], { type: 'application/msword;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'תודות.doc';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    // הורדת תובנות (טקסט) כ-Word
+    downloadAllInsightsMenu?.addEventListener('click', (e) => {
+        e.preventDefault();
+        downloadAllInsightsAsWord();
+    });
+
+    function downloadAllInsightsAsWord() {
+        const insights = JSON.parse(localStorage.getItem('insights')) || [];
+        if (!insights.length) {
+            alert('לא נמצאו תובנות (טקסט) להורדה.');
+            return;
+        }
+
+        let docContent = '';
+        docContent += `@font-face {\n`;
+        docContent += `  font-family: "Rubik";\n`;
+        docContent += `}\n\n`;
+        docContent += `כל התובנות הטקסט:\n\n`;
+
+        insights.forEach((item, idx) => {
+            docContent += `תובנה ${idx + 1} - כותרת: ${item.title}\n`;
+            docContent += `${item.content}\n\n`;
+            docContent += "\n"; // 2 שורות רווח
+        });
+
+        const blob = new Blob([docContent], { type: 'application/msword;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'תובנות.doc';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    // -------------------------------------------------------------------------
+    // ספריית הקלטות תובנות (מודאל) - אודיו
+    // -------------------------------------------------------------------------
     const recordInsightModal = document.getElementById('record-insight-modal');
     const audioInsightTitle = document.getElementById('audio-insight-title');
     const startRecordAudioBtn = document.getElementById('start-record-audio');
@@ -443,11 +546,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let audioRecorder;
     let audioChunks = [];
-
-    recordInsightsLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        openRecordInsightModal();
-    });
 
     function openRecordInsightModal() {
         audioInsightTitle.value = '';
@@ -513,6 +611,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const audioInsights = JSON.parse(localStorage.getItem('audioInsights')) || [];
 
         if (audioBlob) {
+            // נשמור כ-Base64
             const reader = new FileReader();
             reader.onload = (evt) => {
                 const audioBase64 = evt.target.result;
@@ -525,7 +624,7 @@ document.addEventListener('DOMContentLoaded', function () {
             };
             reader.readAsDataURL(audioBlob);
         } else {
-            // אין blob? רק כותרת?
+            // אין blob? רק כותרת
             pushAudioInsight(title, '');
             localStorage.setItem('audioInsights', JSON.stringify(audioInsights));
             afterSaveAudio();
@@ -550,7 +649,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // הצגת הקלטות שנשמרו
+    // הצגת ההקלטות שנשמרו באפליקציה
     function displayAudioInsights() {
         audioInsightsList.innerHTML = '';
         const audioInsights = JSON.parse(localStorage.getItem('audioInsights')) || [];
@@ -613,6 +712,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const saveNewInsightBtn = document.getElementById('save-new-insight');
     const insightsList = document.getElementById('insights-list');
 
+    function openInsightsModal() {
+        insightsModal.style.display = 'flex';
+        history.pushState({ modalOpen: true }, null, '');
+        // ננקה שדות
+        newInsightTitle.value = '';
+        newInsightContent.value = '';
+        displayInsightsList();
+    }
+
     saveNewInsightBtn.addEventListener('click', () => {
         const title = newInsightTitle.value.trim() || 'תובנה חדשה';
         const content = newInsightContent.value.trim();
@@ -657,97 +765,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             insightsList.appendChild(entryDiv);
         });
-    }
-
-    // -------------------------------------------------------------------------
-    // הורדת התודות כ-Word (עם רווחים ומעברי עמוד)
-    // -------------------------------------------------------------------------
-    downloadThanksWordMenu?.addEventListener('click', (e) => {
-        e.preventDefault();
-        downloadThanksAsWord();
-    });
-
-    function downloadThanksAsWord() {
-        const allKeys = [];
-        for (let i = 0; i < localStorage.length; i++) {
-            const k = localStorage.key(i);
-            if (isValidDate(k)) {
-                allKeys.push(k);
-            }
-        }
-        if (!allKeys.length) {
-            alert('לא נמצאו תודות להורדה.');
-            return;
-        }
-        allKeys.sort((a, b) => new Date(a.split('.').reverse().join('-')) - new Date(b.split('.').reverse().join('-')));
-
-        let docContent = '';
-        docContent += `@font-face {\n`;
-        docContent += `  font-family: "Rubik";\n`;
-        docContent += `}\n\n`;
-        docContent += `תודות שונות שנכתבו:\n\n`;
-
-        allKeys.forEach((key, index) => {
-            const entries = JSON.parse(localStorage.getItem(key));
-            docContent += `יום ${key}:\n\n`;
-
-            entries.forEach((entry, idx) => {
-                if (entry && entry.text) {
-                    docContent += `${idx + 1}. ${entry.text} (קטגוריה: ${entry.category || 'ללא'})\n\n`;
-                    docContent += "\n"; // רווח של 2 שורות
-                }
-            });
-
-            if (index < allKeys.length - 1) {
-                docContent += "\f"; // form feed
-            }
-        });
-
-        const blob = new Blob([docContent], { type: 'application/msword;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'תודות.doc';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    }
-
-    // הורדת התובנות (טקסט) כ-Word
-    downloadAllInsightsMenu?.addEventListener('click', (e) => {
-        e.preventDefault();
-        downloadAllInsightsAsWord();
-    });
-
-    function downloadAllInsightsAsWord() {
-        const insights = JSON.parse(localStorage.getItem('insights')) || [];
-        if (!insights.length) {
-            alert('לא נמצאו תובנות (טקסט) להורדה.');
-            return;
-        }
-
-        let docContent = '';
-        docContent += `@font-face {\n`;
-        docContent += `  font-family: "Rubik";\n`;
-        docContent += `}\n\n`;
-        docContent += `כל התובנות הטקסט:\n\n`;
-
-        insights.forEach((item, idx) => {
-            docContent += `תובנה ${idx + 1} - כותרת: ${item.title}\n`;
-            docContent += `${item.content}\n\n`;
-            docContent += "\n"; // 2 שורות רווח
-        });
-
-        const blob = new Blob([docContent], { type: 'application/msword;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'תובנות.doc';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
     }
 
     // -------------------------------------------------------------------------
