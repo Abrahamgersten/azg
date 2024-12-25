@@ -21,10 +21,14 @@
         <a href="#" id="view-previous-thanks">תודות מימים קודמים</a>
         <a href="#" id="set-reminders">הגדר תזכורות יומיות</a>
         <a href="#" id="view-all-did-you-know">כל קטעי 'הידעת?'</a>
-        <!-- רובריקה חדשה: הקלטות תובנות -->
-        <a href="#" id="record-insights">הקלט תובנה</a>
 
+        <!-- רובריקה חדשה: הקלטות תובנות (אודיו) -->
+        <a href="#" id="record-insights">ספריית הקלטות תובנות</a>
+
+        <!-- רובריקה קיימת: ניהול תובנות (טקסט) -->
         <a href="#" id="view-insights">ניהול תובנות (טקסט)</a>
+
+        <!-- כפתורי הורדה -->
         <a href="#" id="download-thanks-word">הורד תודות (Word)</a>
         <a href="#" id="download-all-insights">הורד תובנות (Word)</a>
       </div>
@@ -107,7 +111,7 @@
         <button class="close-button" aria-label="סגור">×</button>
       </header>
       <div class="modal-body">
-        <div id="reminder-settings" class="reminder-settings">
+        <div id="reminder-settings" class="reminder-settings" style="text-align: center;">
           <p style="text-align:center; font-size:1.1em;">
             נא לבחור שעה יומית לקבלת התזכורת
           </p>
@@ -199,11 +203,11 @@
     </div>
   </div>
 
-  <!-- מודאל להקלטת תובנה -->
+  <!-- מודאל להקלטת תובנה (ספריית הקלטות) -->
   <div id="record-insight-modal" class="modal">
     <div class="modal-content" style="font-family: 'Rubik', sans-serif;">
       <header class="modal-header">
-        <h3 style="text-align: center; font-size: 1.8em; width:100%">הקלטת תובנה</h3>
+        <h3 style="text-align: center; font-size: 1.8em; width:100%">ספריית הקלטות תובנות</h3>
         <button class="close-button" aria-label="סגור">×</button>
       </header>
       <div class="modal-body">
@@ -215,8 +219,8 @@
             placeholder="כותרת התובנה (אופציונלי)"
           />
           <div class="audio-controls">
-            <button id="start-record-audio" class="secondary-button">הקלט תובנה</button>
-            <button id="stop-record-audio" class="secondary-button" disabled>עצור הקלטה</button>
+            <button id="start-record-audio" class="secondary-button" style="font-size:14px;">הקלט תובנה</button>
+            <button id="stop-record-audio" class="secondary-button" disabled style="font-size:14px;">עצור הקלטה</button>
           </div>
           <audio id="audio-insight-player" class="audio-player" controls style="display: none;"></audio>
         </div>
@@ -230,4 +234,4 @@
 
   <script src="script.js"></script>
 </body>
-            </html
+  </html>
