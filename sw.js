@@ -68,4 +68,4 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// טיפול בתזכורות (Notification) הוסר
+// אין יותר התזכורות, הוסר
