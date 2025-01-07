@@ -13,13 +13,12 @@ if ('serviceWorker' in navigator) {
 
 document.addEventListener('DOMContentLoaded', function () {
     // --------------------------------------------------------------------------------
-    // אלמנטים קיימים לתודות
+    // אלמנטים ראשיים
     // --------------------------------------------------------------------------------
     const entriesContainer = document.getElementById('entries');
     const saveButton = document.getElementById('save-button');
     const currentDateElement = document.getElementById('current-date');
 
-    // מודאלים ותפריט
     const modal = document.getElementById('modal');
     const modalDate = document.getElementById('modal-date');
     const modalEntries = document.getElementById('modal-entries');
@@ -29,24 +28,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const confirmAddButton = document.getElementById('confirm-add');
     const cancelAddButton = document.getElementById('cancel-add');
     const previousThanksModal = document.getElementById('previous-thanks-modal');
-    const reminderModal = document.getElementById('reminder-modal');
     const allDidYouKnowModal = document.getElementById('all-did-you-know-modal');
     const allDidYouKnowList = document.getElementById('all-did-you-know-list');
     const categoryFilter = document.getElementById('category-filter');
     const filteredEntriesContainer = document.getElementById('filtered-entries');
-    const menuButton = document.querySelector('.menu-button');
-    const dropdownContent = document.querySelector('.dropdown-content');
 
     // כפתורי תפריט
+    const menuButton = document.querySelector('.menu-button');
+    const dropdownContent = document.querySelector('.dropdown-content');
     const viewPreviousThanksLink = document.getElementById('view-previous-thanks');
-    const setRemindersLink = document.getElementById('set-reminders');
     const viewAllDidYouKnowLink = document.getElementById('view-all-did-you-know');
-    const recordInsightsLink = document.getElementById('record-insights');
     const viewInsightsLink = document.getElementById('view-insights');
     const downloadThanksWordMenu = document.getElementById('download-thanks-word');
     const downloadAllInsightsMenu = document.getElementById('download-all-insights');
 
-    // הידעת
+    // ידעת?
     const didYouKnowCarousel = document.getElementById('did-you-know-carousel');
     const didYouKnowFacts = [
         "מחקרו של רוברט אמונס מצא כי הכרת תודה יכולה לשפר את הבריאות הנפשית ולהפחית תחושות דיכאון.",
@@ -71,11 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
         "הכרת תודה מגבירה את התחושה של אופטימיות ותקווה לעתיד."
     ];
 
-    // תאריך ותזמון
-    const today = new Date();
-    const dateKey = today.toLocaleDateString('he-IL');
-
-    // רמות התודות
+    // הגדרות רמות תודות
     const levels = [
         { max: 5, next: 10, add: 5 },
         { max: 10, next: 15, add: 5 },
@@ -85,8 +77,12 @@ document.addEventListener('DOMContentLoaded', function () {
     ];
     let currentLevel = 5;
 
+    // תאריך היום
+    const today = new Date();
+    const dateKey = today.toLocaleDateString('he-IL');
+
     // -------------------------------------------------------------------------
-    // תודות
+    // יצירת שדות תודות
     // -------------------------------------------------------------------------
     function createInputFields(level) {
         const savedEntries = JSON.parse(localStorage.getItem(dateKey)) || [];
@@ -95,6 +91,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const entryContainer = document.createElement('div');
             entryContainer.className = 'entry-container';
 
+            // אינפוט לטקסט התודה
             const input = document.createElement('input');
             input.type = 'text';
             input.className = 'entry-input';
@@ -102,9 +99,9 @@ document.addEventListener('DOMContentLoaded', function () {
             input.value = savedEntries[i] ? savedEntries[i].text : '';
             entryContainer.appendChild(input);
 
+            // select לקטגוריה
             const selectWrapper = document.createElement('div');
             selectWrapper.className = 'styled-select';
-
             const select = document.createElement('select');
             select.className = 'category-select';
             const categories = [
@@ -138,6 +135,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // שמירת תודות
     function saveEntries() {
         try {
             const entryContainers = entriesContainer.getElementsByClassName('entry-container');
@@ -156,6 +154,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // טענת תודות מימים קודמים
     function loadPreviousDays() {
         const previousDaysContainer = document.getElementById('previous-days');
         previousDaysContainer.innerHTML = '';
@@ -176,6 +175,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // בדיקת תוקף תאריך
     function isValidDate(dateString) {
         const dateParts = dateString.split('.');
         if (dateParts.length !== 3) return false;
@@ -183,6 +183,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return !isNaN(date.getTime());
     }
 
+    // הצגת תודות (מימים קודמים) במודאל
     function showEntries(date) {
         try {
             const entries = JSON.parse(localStorage.getItem(date));
@@ -287,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // -------------------------------------------------------------------------
-    // תאריך עברי וכו'
+    // הצגת תאריך (היום + תאריך עברי)
     // -------------------------------------------------------------------------
     function displayCurrentDate() {
         const daysOfWeek = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
@@ -315,62 +316,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // -------------------------------------------------------------------------
-    // סינון תודות
-    // -------------------------------------------------------------------------
-    categoryFilter.addEventListener('change', applyCategoryFilter);
-    function applyCategoryFilter() {
-        const selectedCategory = categoryFilter.value;
-        filteredEntriesContainer.innerHTML = '';
-
-        if (selectedCategory === 'הכל') {
-            filteredEntriesContainer.innerHTML = '';
-            return;
-        }
-
-        const allEntries = [];
-        if (selectedCategory === 'תודות שכתבתי היום') {
-            const entries = JSON.parse(localStorage.getItem(dateKey)) || [];
-            entries.forEach(entry => {
-                if (entry && entry.text) {
-                    allEntries.push({
-                        date: dateKey,
-                        text: entry.text,
-                        category: entry.category || ''
-                    });
-                }
-            });
-        } else {
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (isValidDate(key)) {
-                    const entries = JSON.parse(localStorage.getItem(key));
-                    entries.forEach(entry => {
-                        if (entry && entry.category === selectedCategory) {
-                            allEntries.push({
-                                date: key,
-                                text: entry.text,
-                                category: entry.category || ''
-                            });
-                        }
-                    });
-                }
-            }
-        }
-
-        if (allEntries.length === 0) {
-            const li = document.createElement('li');
-            li.textContent = 'לא נמצאו תודות בקטגוריה זו.';
-            filteredEntriesContainer.appendChild(li);
-        } else {
-            allEntries.forEach(entry => {
-                const li = document.createElement('li');
-                li.innerHTML = `<strong>${entry.date}:</strong> ${entry.text}`;
-                filteredEntriesContainer.appendChild(li);
-            });
-        }
-    }
-
-    // -------------------------------------------------------------------------
     // אתחול
     // -------------------------------------------------------------------------
     function initializeApp() {
@@ -394,7 +339,6 @@ document.addEventListener('DOMContentLoaded', function () {
         createInputFields(currentLevel);
         displayDidYouKnow();
         applyCategoryFilter();
-        initializeReminders();
     }
 
     initializeApp();
@@ -420,31 +364,12 @@ document.addEventListener('DOMContentLoaded', function () {
         history.pushState({ modalOpen: true }, null, '');
     });
 
-    setRemindersLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        setupReminderSettings();
-        reminderModal.style.display = 'flex';
-        history.pushState({ modalOpen: true }, null, '');
-    });
-
     viewAllDidYouKnowLink.addEventListener('click', (e) => {
         e.preventDefault();
         displayAllDidYouKnow();
     });
 
-    recordInsightsLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        openRecordInsightModal();
-    });
-
-    viewInsightsLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        openInsightsModal();
-    });
-
-    // -------------------------------------------------------------------------
     // הורדת תודות כ-Word
-    // -------------------------------------------------------------------------
     downloadThanksWordMenu?.addEventListener('click', (e) => {
         e.preventDefault();
         downloadThanksAsWord();
@@ -477,12 +402,11 @@ document.addEventListener('DOMContentLoaded', function () {
             entries.forEach((entry, idx) => {
                 if (entry && entry.text) {
                     docContent += `${idx + 1}. ${entry.text} (קטגוריה: ${entry.category || 'ללא'})\n\n`;
-                    docContent += "\n"; // רווח של 2 שורות
+                    docContent += "\n";
                 }
             });
-
             if (index < allKeys.length - 1) {
-                docContent += "\f"; // form feed
+                docContent += "\f";
             }
         });
 
@@ -497,214 +421,8 @@ document.addEventListener('DOMContentLoaded', function () {
         URL.revokeObjectURL(url);
     }
 
-    // הורדת תובנות (טקסט) כ-Word
-    downloadAllInsightsMenu?.addEventListener('click', (e) => {
-        e.preventDefault();
-        downloadAllInsightsAsWord();
-    });
-
-    function downloadAllInsightsAsWord() {
-        const insights = JSON.parse(localStorage.getItem('insights')) || [];
-        if (!insights.length) {
-            alert('לא נמצאו תובנות (טקסט) להורדה.');
-            return;
-        }
-
-        let docContent = '';
-        docContent += `@font-face {\n`;
-        docContent += `  font-family: "Rubik";\n`;
-        docContent += `}\n\n`;
-        docContent += `כל התובנות הטקסט:\n\n`;
-
-        insights.forEach((item, idx) => {
-            docContent += `תובנה ${idx + 1} - כותרת: ${item.title}\n`;
-            docContent += `${item.content}\n\n`;
-            docContent += "\n"; // 2 שורות רווח
-        });
-
-        const blob = new Blob([docContent], { type: 'application/msword;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'תובנות.doc';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    }
-
     // -------------------------------------------------------------------------
-    // ספריית הקלטות תובנות (מודאל) - אודיו
-    // -------------------------------------------------------------------------
-    const recordInsightModal = document.getElementById('record-insight-modal');
-    const audioInsightTitle = document.getElementById('audio-insight-title');
-    const startRecordAudioBtn = document.getElementById('start-record-audio');
-    const stopRecordAudioBtn = document.getElementById('stop-record-audio');
-    const audioInsightPlayer = document.getElementById('audio-insight-player');
-    const saveAudioInsightBtn = document.getElementById('save-audio-insight');
-    const audioInsightsList = document.getElementById('audio-insights-list');
-
-    let audioRecorder;
-    let audioChunks = [];
-
-    function openRecordInsightModal() {
-        audioInsightTitle.value = '';
-        audioInsightPlayer.src = '';
-        audioInsightPlayer.style.display = 'none';
-        audioInsightPlayer.dataset.audioBlob = '';
-        startRecordAudioBtn.disabled = false;
-        stopRecordAudioBtn.disabled = true;
-        audioChunks = [];
-
-        displayAudioInsights();
-        recordInsightModal.style.display = 'flex';
-        history.pushState({ modalOpen: true }, null, '');
-    }
-
-    // התחלת הקלטה
-    startRecordAudioBtn.addEventListener('click', async () => {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            alert('הדפדפן לא תומך בהקלטת אודיו.');
-            return;
-        }
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            audioRecorder = new MediaRecorder(stream);
-            audioChunks = [];
-            audioRecorder.ondataavailable = (e) => {
-                audioChunks.push(e.data);
-            };
-            audioRecorder.onstop = () => {
-                const blob = new Blob(audioChunks, { type: 'audio/ogg; codecs=opus' });
-                const audioURL = URL.createObjectURL(blob);
-                audioInsightPlayer.src = audioURL;
-                audioInsightPlayer.style.display = 'block';
-                audioInsightPlayer.dataset.audioBlob = blob;
-            };
-            audioRecorder.start();
-            startRecordAudioBtn.disabled = true;
-            stopRecordAudioBtn.disabled = false;
-        } catch (err) {
-            alert('שגיאה בגישה למיקרופון: ' + err.message);
-        }
-    });
-
-    // עצירת הקלטה
-    stopRecordAudioBtn.addEventListener('click', () => {
-        if (audioRecorder && audioRecorder.state === 'recording') {
-            audioRecorder.stop();
-            startRecordAudioBtn.disabled = false;
-            stopRecordAudioBtn.disabled = true;
-        }
-    });
-
-    // שמירת ההקלטה
-    saveAudioInsightBtn.addEventListener('click', () => {
-        const title = audioInsightTitle.value.trim() || 'תובנה מוקלטת';
-        const audioBlob = audioInsightPlayer.dataset.audioBlob || null;
-
-        if (!title && !audioBlob) {
-            alert('לא הוזן מידע ואין הקלטה.');
-            return;
-        }
-
-        const audioInsights = JSON.parse(localStorage.getItem('audioInsights')) || [];
-
-        if (audioBlob) {
-            // נשמור כ-Base64
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-                const audioBase64 = evt.target.result;
-                pushAudioInsight(title, audioBase64);
-                localStorage.setItem('audioInsights', JSON.stringify(audioInsights));
-                afterSaveAudio();
-            };
-            reader.onerror = (err) => {
-                alert('שגיאה בקריאת ההקלטה: ' + err.message);
-            };
-            reader.readAsDataURL(audioBlob);
-        } else {
-            // אין blob? רק כותרת
-            pushAudioInsight(title, '');
-            localStorage.setItem('audioInsights', JSON.stringify(audioInsights));
-            afterSaveAudio();
-        }
-
-        function pushAudioInsight(t, audio64) {
-            audioInsights.push({
-                title: t,
-                audio: audio64
-            });
-        }
-
-        function afterSaveAudio() {
-            alert('התובנה הקולית נשמרה בהצלחה!');
-            audioInsightTitle.value = '';
-            audioInsightPlayer.src = '';
-            audioInsightPlayer.style.display = 'none';
-            audioInsightPlayer.dataset.audioBlob = '';
-            startRecordAudioBtn.disabled = false;
-            stopRecordAudioBtn.disabled = true;
-            displayAudioInsights();
-        }
-    });
-
-    // הצגת ההקלטות שנשמרו באפליקציה
-    function displayAudioInsights() {
-        audioInsightsList.innerHTML = '';
-        const audioInsights = JSON.parse(localStorage.getItem('audioInsights')) || [];
-        if (!audioInsights.length) {
-            audioInsightsList.innerHTML = '<p>אין הקלטות שנשמרו.</p>';
-            return;
-        }
-        audioInsights.forEach((item, idx) => {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'insight-entry';
-
-            // שורה אחת: כותרת + כפתור מחיקה
-            const rowDiv = document.createElement('div');
-            rowDiv.style.display = 'flex';
-            rowDiv.style.alignItems = 'center';
-
-            const titleEl = document.createElement('strong');
-            titleEl.textContent = `כותרת: ${item.title}`;
-            titleEl.style.fontSize = '1.1em';
-
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = 'מחק';
-            deleteBtn.className = 'secondary-button';
-            deleteBtn.style.fontSize = '12px';
-            deleteBtn.style.marginLeft = '10px';
-
-            deleteBtn.addEventListener('click', () => {
-                if (confirm('האם למחוק הקלטה זו?')) {
-                    audioInsights.splice(idx, 1);
-                    localStorage.setItem('audioInsights', JSON.stringify(audioInsights));
-                    displayAudioInsights();
-                }
-            });
-
-            rowDiv.appendChild(titleEl);
-            rowDiv.appendChild(deleteBtn);
-
-            wrapper.appendChild(rowDiv);
-
-            // אם יש אודיו
-            if (item.audio) {
-                const audio = document.createElement('audio');
-                audio.controls = true;
-                audio.style.display = 'block';
-                audio.style.marginTop = '10px';
-                audio.src = item.audio;
-                wrapper.appendChild(audio);
-            }
-
-            audioInsightsList.appendChild(wrapper);
-        });
-    }
-
-    // -------------------------------------------------------------------------
-    // תובנות (טקסט)
+    // ניהול האמונות (במקום תובנות)
     // -------------------------------------------------------------------------
     const insightsModal = document.getElementById('insights-modal');
     const newInsightTitle = document.getElementById('new-insight-title');
@@ -712,17 +430,22 @@ document.addEventListener('DOMContentLoaded', function () {
     const saveNewInsightBtn = document.getElementById('save-new-insight');
     const insightsList = document.getElementById('insights-list');
 
+    viewInsightsLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        openInsightsModal();
+    });
+
     function openInsightsModal() {
         insightsModal.style.display = 'flex';
         history.pushState({ modalOpen: true }, null, '');
-        // ננקה שדות
         newInsightTitle.value = '';
         newInsightContent.value = '';
         displayInsightsList();
     }
 
+    // שמירת אמונה חדשה
     saveNewInsightBtn.addEventListener('click', () => {
-        const title = newInsightTitle.value.trim() || 'תובנה חדשה';
+        const title = newInsightTitle.value.trim() || 'אמונה חדשה';
         const content = newInsightContent.value.trim();
 
         if (!title && !content) {
@@ -736,94 +459,134 @@ document.addEventListener('DOMContentLoaded', function () {
             content
         });
         localStorage.setItem('insights', JSON.stringify(insights));
-        alert('תובנת הטקסט נשמרה בהצלחה!');
+        alert('האמונה נשמרה בהצלחה!');
 
         newInsightTitle.value = '';
         newInsightContent.value = '';
         displayInsightsList();
     });
 
+    // הצגת רשימת האמונות, עם אפשרות עריכה ומחיקה
     function displayInsightsList() {
         insightsList.innerHTML = '';
         const insights = JSON.parse(localStorage.getItem('insights')) || [];
         if (!insights.length) {
-            insightsList.innerHTML = '<p>עדיין לא נכתבו תובנות (טקסט).</p>';
+            insightsList.innerHTML = '<p>עדיין לא נכתבו אמונות.</p>';
             return;
         }
         insights.forEach((insight, idx) => {
             const entryDiv = document.createElement('div');
             entryDiv.className = 'insight-entry';
 
+            // כותרת + כפתורי עריכה/מחיקה בשורה אחת
+            const rowDiv = document.createElement('div');
+            rowDiv.style.display = 'flex';
+            rowDiv.style.alignItems = 'center';
+            rowDiv.style.justifyContent = 'space-between';
+
             const titleEl = document.createElement('strong');
             titleEl.textContent = `כותרת: ${insight.title}`;
-            entryDiv.appendChild(titleEl);
+            titleEl.style.fontSize = '1.1em';
 
+            const btnContainer = document.createElement('div');
+            btnContainer.style.display = 'flex';
+            btnContainer.style.gap = '8px';
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'secondary-button';
+            editBtn.textContent = 'ערוך';
+            editBtn.style.fontSize = '14px';
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'secondary-button';
+            deleteBtn.textContent = 'מחק';
+            deleteBtn.style.fontSize = '14px';
+
+            btnContainer.appendChild(editBtn);
+            btnContainer.appendChild(deleteBtn);
+
+            rowDiv.appendChild(titleEl);
+            rowDiv.appendChild(btnContainer);
+
+            entryDiv.appendChild(rowDiv);
+
+            // תוכן האמונה
             const contentP = document.createElement('p');
             contentP.textContent = insight.content;
             contentP.style.marginTop = '10px';
             entryDiv.appendChild(contentP);
 
+            // אירוע מחיקה
+            deleteBtn.addEventListener('click', () => {
+                if (confirm('האם למחוק אמונה זו?')) {
+                    insights.splice(idx, 1);
+                    localStorage.setItem('insights', JSON.stringify(insights));
+                    displayInsightsList();
+                }
+            });
+
+            // אירוע עריכה
+            editBtn.addEventListener('click', () => {
+                editInsight(idx);
+            });
+
             insightsList.appendChild(entryDiv);
         });
     }
 
-    // -------------------------------------------------------------------------
-    // תזכורות (מינימלי + עיצוב קל)
-    // -------------------------------------------------------------------------
-    function setupReminderSettings() {
-        const dailyReminderTimeInput = document.getElementById('daily-reminder-time');
-        const saveDailyReminderBtn = document.getElementById('save-daily-reminder');
+    // עריכת אמונה קיימת
+    function editInsight(index) {
+        const insights = JSON.parse(localStorage.getItem('insights')) || [];
+        const insightObj = insights[index];
+        if (!insightObj) return;
 
-        const storedTime = localStorage.getItem('dailyReminderTime');
-        if (storedTime) {
-            dailyReminderTimeInput.value = storedTime;
+        const newTitle = prompt('ערוך כותרת האמונה:', insightObj.title);
+        if (newTitle === null) return; // ביטול
+
+        const newContent = prompt('ערוך תוכן האמונה:', insightObj.content);
+        if (newContent === null) return; // ביטול
+
+        insightObj.title = newTitle.trim() || 'אמונה חדשה';
+        insightObj.content = newContent.trim();
+        localStorage.setItem('insights', JSON.stringify(insights));
+
+        alert('האמונה נערכה בהצלחה!');
+        displayInsightsList();
+    }
+
+    // הורדת אמונות כ-Word (במקום "תובנות")
+    downloadAllInsightsMenu?.addEventListener('click', (e) => {
+        e.preventDefault();
+        downloadAllInsightsAsWord();
+    });
+
+    function downloadAllInsightsAsWord() {
+        const insights = JSON.parse(localStorage.getItem('insights')) || [];
+        if (!insights.length) {
+            alert('לא נמצאו אמונות להורדה.');
+            return;
         }
 
-        saveDailyReminderBtn.addEventListener('click', () => {
-            const chosenTime = dailyReminderTimeInput.value;
-            if (!chosenTime) {
-                alert('אנא בחר שעה');
-                return;
-            }
-            localStorage.setItem('dailyReminderTime', chosenTime);
-            alert('התזכורת נשמרה בהצלחה!');
-            scheduleDailyReminder(chosenTime);
+        let docContent = '';
+        docContent += `@font-face {\n`;
+        docContent += `  font-family: "Rubik";\n`;
+        docContent += `}\n\n`;
+        docContent += `כל האמונות:\n\n`;
+
+        insights.forEach((item, idx) => {
+            docContent += `אמונה ${idx + 1} - כותרת: ${item.title}\n`;
+            docContent += `${item.content}\n\n`;
+            docContent += "\n"; // 2 שורות רווח
         });
-    }
 
-    function requestNotificationPermission() {
-        if (Notification.permission !== 'granted') {
-            Notification.requestPermission();
-        }
-    }
-
-    function scheduleDailyReminder(chosenTime) {
-        // הדמיית תזכורת
-        requestNotificationPermission();
-        const [hh, mm] = chosenTime.split(':').map(Number);
-        const now = new Date();
-        let reminderTime = new Date();
-        reminderTime.setHours(hh, mm, 0, 0);
-        if (reminderTime <= now) {
-            reminderTime.setDate(reminderTime.getDate() + 1);
-        }
-
-        const delay = reminderTime - now;
-        setTimeout(() => {
-            if (Notification.permission === 'granted') {
-                new Notification('תזכורת יומית:', {
-                    body: 'אל תשכח להודות או לכתוב תובנה!',
-                    tag: 'daily-reminder'
-                });
-            }
-            scheduleDailyReminder(chosenTime);
-        }, delay);
-    }
-
-    function initializeReminders() {
-        const chosenTime = localStorage.getItem('dailyReminderTime');
-        if (chosenTime) {
-            scheduleDailyReminder(chosenTime);
-        }
+        const blob = new Blob([docContent], { type: 'application/msword;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'האמונות שלי.doc';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     }
 });
