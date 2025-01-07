@@ -60,29 +60,10 @@ self.addEventListener('fetch', event => {
         );
       })
       .catch(() => {
-        // Fallback
+        // fallback
         if (event.request.mode === 'navigate') {
           return caches.match('./index.html');
         }
       })
   );
-});
-
-// טיפול בתזכורות (Notification)
-self.addEventListener('notificationclick', event => {
-  event.notification.close();
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
-      for (const client of clientList) {
-        if (client.url.includes('index.html') || client.url === self.registration.scope) {
-          if ('focus' in client) {
-            return client.focus();
-          }
-        }
-      }
-      if (clients.openWindow) {
-        return clients.openWindow('./');
-      }
-    })
-  );
-});
+})
