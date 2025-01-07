@@ -13,12 +13,13 @@ if ('serviceWorker' in navigator) {
 
 document.addEventListener('DOMContentLoaded', function () {
     // --------------------------------------------------------------------------------
-    // אלמנטים ראשיים
+    // אלמנטים קיימים לתודות
     // --------------------------------------------------------------------------------
     const entriesContainer = document.getElementById('entries');
     const saveButton = document.getElementById('save-button');
     const currentDateElement = document.getElementById('current-date');
 
+    // מודאלים ותפריט
     const modal = document.getElementById('modal');
     const modalDate = document.getElementById('modal-date');
     const modalEntries = document.getElementById('modal-entries');
@@ -32,17 +33,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const allDidYouKnowList = document.getElementById('all-did-you-know-list');
     const categoryFilter = document.getElementById('category-filter');
     const filteredEntriesContainer = document.getElementById('filtered-entries');
-
-    // כפתורי תפריט
     const menuButton = document.querySelector('.menu-button');
     const dropdownContent = document.querySelector('.dropdown-content');
+
+    // כפתורי תפריט
     const viewPreviousThanksLink = document.getElementById('view-previous-thanks');
     const viewAllDidYouKnowLink = document.getElementById('view-all-did-you-know');
-    const viewInsightsLink = document.getElementById('view-insights');
-    const downloadThanksWordMenu = document.getElementById('download-thanks-word');
-    const downloadAllInsightsMenu = document.getElementById('download-all-insights');
+    const viewBeliefsLink = document.getElementById('view-beliefs');
+    const downloadAllBeliefsMenu = document.getElementById('download-all-beliefs');
 
-    // ידעת?
+    // הידעת
     const didYouKnowCarousel = document.getElementById('did-you-know-carousel');
     const didYouKnowFacts = [
         "מחקרו של רוברט אמונס מצא כי הכרת תודה יכולה לשפר את הבריאות הנפשית ולהפחית תחושות דיכאון.",
@@ -67,7 +67,11 @@ document.addEventListener('DOMContentLoaded', function () {
         "הכרת תודה מגבירה את התחושה של אופטימיות ותקווה לעתיד."
     ];
 
-    // הגדרות רמות תודות
+    // תאריך ותזמון
+    const today = new Date();
+    const dateKey = today.toLocaleDateString('he-IL');
+
+    // רמות התודות
     const levels = [
         { max: 5, next: 10, add: 5 },
         { max: 10, next: 15, add: 5 },
@@ -77,12 +81,8 @@ document.addEventListener('DOMContentLoaded', function () {
     ];
     let currentLevel = 5;
 
-    // תאריך היום
-    const today = new Date();
-    const dateKey = today.toLocaleDateString('he-IL');
-
     // -------------------------------------------------------------------------
-    // יצירת שדות תודות
+    // תודות
     // -------------------------------------------------------------------------
     function createInputFields(level) {
         const savedEntries = JSON.parse(localStorage.getItem(dateKey)) || [];
@@ -91,7 +91,6 @@ document.addEventListener('DOMContentLoaded', function () {
             const entryContainer = document.createElement('div');
             entryContainer.className = 'entry-container';
 
-            // אינפוט לטקסט התודה
             const input = document.createElement('input');
             input.type = 'text';
             input.className = 'entry-input';
@@ -99,9 +98,9 @@ document.addEventListener('DOMContentLoaded', function () {
             input.value = savedEntries[i] ? savedEntries[i].text : '';
             entryContainer.appendChild(input);
 
-            // select לקטגוריה
             const selectWrapper = document.createElement('div');
             selectWrapper.className = 'styled-select';
+
             const select = document.createElement('select');
             select.className = 'category-select';
             const categories = [
@@ -135,7 +134,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // שמירת תודות
     function saveEntries() {
         try {
             const entryContainers = entriesContainer.getElementsByClassName('entry-container');
@@ -154,7 +152,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // טענת תודות מימים קודמים
     function loadPreviousDays() {
         const previousDaysContainer = document.getElementById('previous-days');
         previousDaysContainer.innerHTML = '';
@@ -175,7 +172,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // בדיקת תוקף תאריך
     function isValidDate(dateString) {
         const dateParts = dateString.split('.');
         if (dateParts.length !== 3) return false;
@@ -183,7 +179,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return !isNaN(date.getTime());
     }
 
-    // הצגת תודות (מימים קודמים) במודאל
     function showEntries(date) {
         try {
             const entries = JSON.parse(localStorage.getItem(date));
@@ -288,7 +283,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // -------------------------------------------------------------------------
-    // הצגת תאריך (היום + תאריך עברי)
+    // תאריך עברי וכו'
     // -------------------------------------------------------------------------
     function displayCurrentDate() {
         const daysOfWeek = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
@@ -313,6 +308,62 @@ document.addEventListener('DOMContentLoaded', function () {
                     reject(error);
                 });
         });
+    }
+
+    // -------------------------------------------------------------------------
+    // סינון תודות
+    // -------------------------------------------------------------------------
+    categoryFilter.addEventListener('change', applyCategoryFilter);
+    function applyCategoryFilter() {
+        const selectedCategory = categoryFilter.value;
+        filteredEntriesContainer.innerHTML = '';
+
+        if (selectedCategory === 'הכל') {
+            filteredEntriesContainer.innerHTML = '';
+            return;
+        }
+
+        const allEntries = [];
+        if (selectedCategory === 'תודות שכתבתי היום') {
+            const entries = JSON.parse(localStorage.getItem(dateKey)) || [];
+            entries.forEach(entry => {
+                if (entry && entry.text) {
+                    allEntries.push({
+                        date: dateKey,
+                        text: entry.text,
+                        category: entry.category || ''
+                    });
+                }
+            });
+        } else {
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (isValidDate(key)) {
+                    const entries = JSON.parse(localStorage.getItem(key));
+                    entries.forEach(entry => {
+                        if (entry && entry.category === selectedCategory) {
+                            allEntries.push({
+                                date: key,
+                                text: entry.text,
+                                category: entry.category || ''
+                            });
+                        }
+                    });
+                }
+            }
+        }
+
+        if (allEntries.length === 0) {
+            const li = document.createElement('li');
+            li.textContent = 'לא נמצאו תודות בקטגוריה זו.';
+            filteredEntriesContainer.appendChild(li);
+        } else {
+            allEntries.forEach(entry => {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${entry.date}:</strong> ${entry.text}`;
+                filteredEntriesContainer.appendChild(li);
+            });
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -369,12 +420,168 @@ document.addEventListener('DOMContentLoaded', function () {
         displayAllDidYouKnow();
     });
 
-    // הורדת תודות כ-Word
-    downloadThanksWordMenu?.addEventListener('click', (e) => {
+    viewBeliefsLink.addEventListener('click', (e) => {
         e.preventDefault();
-        downloadThanksAsWord();
+        openBeliefsModal();
     });
 
+    // -------------------------------------------------------------------------
+    // הורדת אמונות כ-Word
+    // -------------------------------------------------------------------------
+    downloadAllBeliefsMenu?.addEventListener('click', (e) => {
+        e.preventDefault();
+        downloadAllBeliefsAsWord();
+    });
+
+    function downloadAllBeliefsAsWord() {
+        const beliefs = JSON.parse(localStorage.getItem('beliefs')) || [];
+        if (!beliefs.length) {
+            alert('לא נמצאו אמונות להורדה.');
+            return;
+        }
+
+        let docContent = '';
+        docContent += `@font-face {\n`;
+        docContent += `  font-family: "Rubik";\n`;
+        docContent += `}\n\n`;
+        docContent += `כל האמונות:\n\n`;
+
+        beliefs.forEach((item, idx) => {
+            docContent += `אמונה ${idx + 1} - כותרת: ${item.title}\n`;
+            docContent += `${item.content}\n\n`;
+            docContent += "\n"; // 2 שורות רווח
+        });
+
+        const blob = new Blob([docContent], { type: 'application/msword;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'אמונות.doc';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    // -------------------------------------------------------------------------
+    // אמונות - הוספה, עריכה ומחיקה
+    // -------------------------------------------------------------------------
+    const beliefsModal = document.getElementById('beliefs-modal');
+    const newBeliefTitle = document.getElementById('new-belief-title');
+    const newBeliefContent = document.getElementById('new-belief-content');
+    const saveNewBeliefBtn = document.getElementById('save-new-belief');
+    const beliefsList = document.getElementById('beliefs-list');
+
+    function openBeliefsModal() {
+        beliefsModal.style.display = 'flex';
+        history.pushState({ modalOpen: true }, null, '');
+        // ננקה שדות
+        newBeliefTitle.value = '';
+        newBeliefContent.value = '';
+        displayBeliefsList();
+    }
+
+    saveNewBeliefBtn.addEventListener('click', () => {
+        const title = newBeliefTitle.value.trim() || 'אמונה חדשה';
+        const content = newBeliefContent.value.trim();
+
+        if (!title && !content) {
+            alert('אין מה לשמור.');
+            return;
+        }
+
+        const beliefs = JSON.parse(localStorage.getItem('beliefs')) || [];
+        beliefs.push({
+            title,
+            content
+        });
+        localStorage.setItem('beliefs', JSON.stringify(beliefs));
+        alert('האמונה נשמרה בהצלחה!');
+
+        newBeliefTitle.value = '';
+        newBeliefContent.value = '';
+        displayBeliefsList();
+    });
+
+    function displayBeliefsList() {
+        beliefsList.innerHTML = '';
+        const beliefs = JSON.parse(localStorage.getItem('beliefs')) || [];
+        if (!beliefs.length) {
+            beliefsList.innerHTML = '<p>עדיין לא נכתבו אמונות.</p>';
+            return;
+        }
+        beliefs.forEach((belief, idx) => {
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'belief-entry';
+
+            const titleEl = document.createElement('strong');
+            titleEl.textContent = `כותרת: ${belief.title}`;
+            entryDiv.appendChild(titleEl);
+
+            const contentP = document.createElement('p');
+            contentP.textContent = belief.content;
+            contentP.style.marginTop = '10px';
+            entryDiv.appendChild(contentP);
+
+            // כפתורים לעריכה ומחיקה
+            const buttonsDiv = document.createElement('div');
+            buttonsDiv.style.marginTop = '10px';
+            buttonsDiv.style.display = 'flex';
+            buttonsDiv.style.gap = '10px';
+
+            const editBtn = document.createElement('button');
+            editBtn.textContent = 'ערוך';
+            editBtn.className = 'secondary-button';
+            editBtn.style.fontSize = '12px';
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'מחק';
+            deleteBtn.className = 'secondary-button';
+            deleteBtn.style.fontSize = '12px';
+
+            // אירועי לחיצה
+            editBtn.addEventListener('click', () => {
+                editBelief(idx);
+            });
+
+            deleteBtn.addEventListener('click', () => {
+                if (confirm('האם למחוק אמונה זו?')) {
+                    beliefs.splice(idx, 1);
+                    localStorage.setItem('beliefs', JSON.stringify(beliefs));
+                    displayBeliefsList();
+                }
+            });
+
+            buttonsDiv.appendChild(editBtn);
+            buttonsDiv.appendChild(deleteBtn);
+            entryDiv.appendChild(buttonsDiv);
+
+            beliefsList.appendChild(entryDiv);
+        });
+    }
+
+    function editBelief(index) {
+        const beliefs = JSON.parse(localStorage.getItem('beliefs')) || [];
+        const belief = beliefs[index];
+        if (!belief) return;
+
+        const newTitle = prompt('ערוך כותרת:', belief.title);
+        if (newTitle === null) return; 
+
+        const newContent = prompt('ערוך תוכן האמונה:', belief.content);
+        if (newContent === null) return;
+
+        belief.title = newTitle.trim() || 'אמונה חדשה';
+        belief.content = newContent.trim();
+        localStorage.setItem('beliefs', JSON.stringify(beliefs));
+
+        alert('האמונה נערכה בהצלחה!');
+        displayBeliefsList();
+    }
+
+    // -------------------------------------------------------------------------
+    // הורדת תודות כ-Word
+    // -------------------------------------------------------------------------
     function downloadThanksAsWord() {
         const allKeys = [];
         for (let i = 0; i < localStorage.length; i++) {
@@ -402,11 +609,12 @@ document.addEventListener('DOMContentLoaded', function () {
             entries.forEach((entry, idx) => {
                 if (entry && entry.text) {
                     docContent += `${idx + 1}. ${entry.text} (קטגוריה: ${entry.category || 'ללא'})\n\n`;
-                    docContent += "\n";
+                    docContent += "\n"; // רווח של 2 שורות
                 }
             });
+
             if (index < allKeys.length - 1) {
-                docContent += "\f";
+                docContent += "\f"; // form feed
             }
         });
 
@@ -422,171 +630,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // -------------------------------------------------------------------------
-    // ניהול האמונות (במקום תובנות)
+    // מודאלים והיסטוריה
     // -------------------------------------------------------------------------
-    const insightsModal = document.getElementById('insights-modal');
-    const newInsightTitle = document.getElementById('new-insight-title');
-    const newInsightContent = document.getElementById('new-insight-content');
-    const saveNewInsightBtn = document.getElementById('save-new-insight');
-    const insightsList = document.getElementById('insights-list');
-
-    viewInsightsLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        openInsightsModal();
-    });
-
-    function openInsightsModal() {
-        insightsModal.style.display = 'flex';
+    function openBeliefsModal() {
+        beliefsModal.style.display = 'flex';
         history.pushState({ modalOpen: true }, null, '');
-        newInsightTitle.value = '';
-        newInsightContent.value = '';
-        displayInsightsList();
+        displayBeliefsList();
     }
 
-    // שמירת אמונה חדשה
-    saveNewInsightBtn.addEventListener('click', () => {
-        const title = newInsightTitle.value.trim() || 'אמונה חדשה';
-        const content = newInsightContent.value.trim();
-
-        if (!title && !content) {
-            alert('אין מה לשמור.');
-            return;
-        }
-
-        const insights = JSON.parse(localStorage.getItem('insights')) || [];
-        insights.push({
-            title,
-            content
-        });
-        localStorage.setItem('insights', JSON.stringify(insights));
-        alert('האמונה נשמרה בהצלחה!');
-
-        newInsightTitle.value = '';
-        newInsightContent.value = '';
-        displayInsightsList();
-    });
-
-    // הצגת רשימת האמונות, עם אפשרות עריכה ומחיקה
-    function displayInsightsList() {
-        insightsList.innerHTML = '';
-        const insights = JSON.parse(localStorage.getItem('insights')) || [];
-        if (!insights.length) {
-            insightsList.innerHTML = '<p>עדיין לא נכתבו אמונות.</p>';
-            return;
-        }
-        insights.forEach((insight, idx) => {
-            const entryDiv = document.createElement('div');
-            entryDiv.className = 'insight-entry';
-
-            // כותרת + כפתורי עריכה/מחיקה בשורה אחת
-            const rowDiv = document.createElement('div');
-            rowDiv.style.display = 'flex';
-            rowDiv.style.alignItems = 'center';
-            rowDiv.style.justifyContent = 'space-between';
-
-            const titleEl = document.createElement('strong');
-            titleEl.textContent = `כותרת: ${insight.title}`;
-            titleEl.style.fontSize = '1.1em';
-
-            const btnContainer = document.createElement('div');
-            btnContainer.style.display = 'flex';
-            btnContainer.style.gap = '8px';
-
-            const editBtn = document.createElement('button');
-            editBtn.className = 'secondary-button';
-            editBtn.textContent = 'ערוך';
-            editBtn.style.fontSize = '14px';
-
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'secondary-button';
-            deleteBtn.textContent = 'מחק';
-            deleteBtn.style.fontSize = '14px';
-
-            btnContainer.appendChild(editBtn);
-            btnContainer.appendChild(deleteBtn);
-
-            rowDiv.appendChild(titleEl);
-            rowDiv.appendChild(btnContainer);
-
-            entryDiv.appendChild(rowDiv);
-
-            // תוכן האמונה
-            const contentP = document.createElement('p');
-            contentP.textContent = insight.content;
-            contentP.style.marginTop = '10px';
-            entryDiv.appendChild(contentP);
-
-            // אירוע מחיקה
-            deleteBtn.addEventListener('click', () => {
-                if (confirm('האם למחוק אמונה זו?')) {
-                    insights.splice(idx, 1);
-                    localStorage.setItem('insights', JSON.stringify(insights));
-                    displayInsightsList();
-                }
-            });
-
-            // אירוע עריכה
-            editBtn.addEventListener('click', () => {
-                editInsight(idx);
-            });
-
-            insightsList.appendChild(entryDiv);
-        });
-    }
-
-    // עריכת אמונה קיימת
-    function editInsight(index) {
-        const insights = JSON.parse(localStorage.getItem('insights')) || [];
-        const insightObj = insights[index];
-        if (!insightObj) return;
-
-        const newTitle = prompt('ערוך כותרת האמונה:', insightObj.title);
-        if (newTitle === null) return; // ביטול
-
-        const newContent = prompt('ערוך תוכן האמונה:', insightObj.content);
-        if (newContent === null) return; // ביטול
-
-        insightObj.title = newTitle.trim() || 'אמונה חדשה';
-        insightObj.content = newContent.trim();
-        localStorage.setItem('insights', JSON.stringify(insights));
-
-        alert('האמונה נערכה בהצלחה!');
-        displayInsightsList();
-    }
-
-    // הורדת אמונות כ-Word (במקום "תובנות")
-    downloadAllInsightsMenu?.addEventListener('click', (e) => {
-        e.preventDefault();
-        downloadAllInsightsAsWord();
-    });
-
-    function downloadAllInsightsAsWord() {
-        const insights = JSON.parse(localStorage.getItem('insights')) || [];
-        if (!insights.length) {
-            alert('לא נמצאו אמונות להורדה.');
-            return;
-        }
-
-        let docContent = '';
-        docContent += `@font-face {\n`;
-        docContent += `  font-family: "Rubik";\n`;
-        docContent += `}\n\n`;
-        docContent += `כל האמונות:\n\n`;
-
-        insights.forEach((item, idx) => {
-            docContent += `אמונה ${idx + 1} - כותרת: ${item.title}\n`;
-            docContent += `${item.content}\n\n`;
-            docContent += "\n"; // 2 שורות רווח
-        });
-
-        const blob = new Blob([docContent], { type: 'application/msword;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'האמונות שלי.doc';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    }
-});
+})
