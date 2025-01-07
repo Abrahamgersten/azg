@@ -19,16 +19,14 @@
       <button class="menu-button" aria-label="תפריט">&#9776;</button>
       <div class="dropdown-content">
         <a href="#" id="view-previous-thanks">תודות מימים קודמים</a>
+        <!-- הוסרו הגדרות תזכורות וספריית הקלטות -->
         <a href="#" id="view-all-did-you-know">כל קטעי 'הידעת?'</a>
-        <!-- הסרה: תזכורות ו"הקלט תובנה" -->
-        <a href="#" id="view-insights">ניהול האמונות שלי</a>  <!-- שינוי מלל -->
 
-        <!-- במקום 'הורד תובנות' --> 
-        <a href="#" id="download-all-insights">הורד אמונות</a>
+        <!-- שונה 'ניהול תובנות' ל'ניהול האמונות' -->
+        <a href="#" id="view-beliefs">ניהול האמונות שלי</a>
 
-        <!-- במקום 'הורד תודות (Word)' נשאר כמות שהוא? 
-             אם תרצו להשאיר הורדת תודות, נוודא שזה נשאר. -->
-        <a href="#" id="download-thanks-word">הורד תודות (Word)</a>
+        <!-- שונה 'הורד תובנות' ל'הורד אמונות' -->
+        <a href="#" id="download-all-beliefs">הורד אמונות (Word)</a>
       </div>
     </nav>
 
@@ -101,6 +99,37 @@
     </div>
   </div>
 
+  <!-- מודאל לצפייה באמונות -->
+  <div id="beliefs-modal" class="modal">
+    <div class="modal-content" style="font-family: 'Rubik', sans-serif;">
+      <header class="modal-header">
+        <h3 style="text-align: center; font-size: 1.8em; width:100%">האמונות שלי</h3>
+        <button class="close-button" aria-label="סגור">×</button>
+      </header>
+      <div class="modal-body">
+        <div id="new-belief" class="belief-entry">
+          <input
+            type="text"
+            id="new-belief-title"
+            class="belief-title"
+            placeholder="כותרת האמונה (אופציונלי)"
+          />
+          <textarea
+            id="new-belief-content"
+            class="belief-input"
+            placeholder="כתוב כאן את האמונה..."
+          ></textarea>
+        </div>
+        <button id="save-new-belief" class="primary-button">שמור אמונה חדשה</button>
+        <hr />
+        <h3 style="text-align: center; font-size: 1.6em; margin-bottom:20px;">
+          האמונות שנשמרו
+        </h3>
+        <div id="beliefs-list" class="beliefs-list"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- מודאל לצפייה בתודות יומיות -->
   <div id="modal" class="modal">
     <div class="modal-content">
@@ -147,39 +176,6 @@
     </div>
   </div>
 
-  <!-- מודאל לניהול האמונות שלי (במקום תובנות טקסט) -->
-  <div id="insights-modal" class="modal">
-    <div class="modal-content" style="font-family: 'Rubik', sans-serif;">
-      <header class="modal-header">
-        <!-- במקום 'התובנות שלי' -->
-        <h3 style="text-align: center; font-size: 1.8em; width:100%">טבע = נס</h3>
-        <button class="close-button" aria-label="סגור">×</button>
-      </header>
-      <div class="modal-body">
-        <div id="new-insight" class="insight-entry">
-          <input
-            type="text"
-            id="new-insight-title"
-            class="insight-title"
-            placeholder="כותרת האמונה (אופציונלי)"
-          />
-          <textarea
-            id="new-insight-content"
-            class="insight-input"
-            placeholder="כתוב כאן את האמונה..."
-          ></textarea>
-        </div>
-        <button id="save-new-insight" class="primary-button">שמור אמונה חדשה</button>
-        <hr />
-        <!-- במקום 'תובנות טקסט שנשמרו' -->
-        <h3 style="text-align: center; font-size: 1.6em; margin-bottom:20px;">
-          האמונות שלי
-        </h3>
-        <div id="insights-list" class="insights-list"></div>
-      </div>
-    </div>
-  </div>
-
   <script src="script.js"></script>
 </body>
-  </html
+        </html>
