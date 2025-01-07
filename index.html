@@ -19,13 +19,13 @@
       <button class="menu-button" aria-label="תפריט">&#9776;</button>
       <div class="dropdown-content">
         <a href="#" id="view-previous-thanks">תודות מימים קודמים</a>
-        <!-- הוסרו הגדרות תזכורות וספריית הקלטות -->
         <a href="#" id="view-all-did-you-know">כל קטעי 'הידעת?'</a>
 
-        <!-- שונה 'ניהול תובנות' ל'ניהול האמונות' -->
+        <!-- קישור לניהול האמונות -->
         <a href="#" id="view-beliefs">ניהול האמונות שלי</a>
 
-        <!-- שונה 'הורד תובנות' ל'הורד אמונות' -->
+        <!-- כפתורים להורדת קבצים -->
+        <a href="#" id="download-thanks-word">הורד תודות (Word)</a>
         <a href="#" id="download-all-beliefs">הורד אמונות (Word)</a>
       </div>
     </nav>
@@ -70,6 +70,8 @@
             <option value="תודה על דברים מהשגרה היומית"
               >תודה על דברים מהשגרה היומית</option
             >
+            <!-- קטגוריה חדשה לצפייה גם באמונות -->
+            <option value="אמונות">אמונות</option>
           </select>
         </div>
         <ul id="filtered-entries" class="filtered-entries">
@@ -102,18 +104,14 @@
   <!-- מודאל לצפייה באמונות -->
   <div id="beliefs-modal" class="modal">
     <div class="modal-content" style="font-family: 'Rubik', sans-serif;">
+      <!-- במקום 'האמונות שלי' => 'טבע = נס' -->
       <header class="modal-header">
-        <h3 style="text-align: center; font-size: 1.8em; width:100%">האמונות שלי</h3>
+        <h3 style="text-align: center; font-size: 1.8em; width:100%">טבע = נס</h3>
         <button class="close-button" aria-label="סגור">×</button>
       </header>
       <div class="modal-body">
         <div id="new-belief" class="belief-entry">
-          <input
-            type="text"
-            id="new-belief-title"
-            class="belief-title"
-            placeholder="כותרת האמונה (אופציונלי)"
-          />
+          <!-- שדה יחיד בלבד (ללא כותרת) -->
           <textarea
             id="new-belief-content"
             class="belief-input"
@@ -178,4 +176,4 @@
 
   <script src="script.js"></script>
 </body>
-        </html>
+</html>
