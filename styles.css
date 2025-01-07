@@ -217,8 +217,8 @@ main h3 {
 .secondary-button {
   background-color: #bdc3c7;
   color: #2c3e50;
-  font-size: 14px;
-  padding: 6px 14px;
+  font-size: 14px; /* כפתורים קטנים יותר */
+  padding: 6px 14px; /* צמצום מעט את הפדינג */
 }
 
 .secondary-button:hover {
@@ -380,8 +380,8 @@ main h3 {
   border-bottom: none;
 }
 
-/* תובנות (שונו לאמונות) */
-.insight-entry {
+/* אמונות */
+.belief-entry {
   background-color: rgba(255,255,255,0.9);
   border: 1px solid #ecf0f1;
   border-radius: 8px;
@@ -390,7 +390,7 @@ main h3 {
   margin-bottom: 10px;
 }
 
-.insight-title {
+.belief-title {
   width: 100%;
   padding: 10px;
   margin-bottom: 10px;
@@ -401,7 +401,7 @@ main h3 {
   text-align: right;
 }
 
-.insight-input {
+.belief-input {
   width: 100%;
   height: 80px;
   padding: 10px;
@@ -415,7 +415,7 @@ main h3 {
   text-align: right;
 }
 
-.insight-input:focus {
+.belief-input:focus {
   border-color: #3498db;
   outline: none;
 }
@@ -445,4 +445,4 @@ main h3 {
   .modal-content {
     padding: 20px;
   }
-}
+  
