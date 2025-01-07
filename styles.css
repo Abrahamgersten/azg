@@ -217,8 +217,8 @@ main h3 {
 .secondary-button {
   background-color: #bdc3c7;
   color: #2c3e50;
-  font-size: 14px; /* כפתורים קטנים יותר */
-  padding: 6px 14px; /* צמצום מעט את הפדינג */
+  font-size: 14px;
+  padding: 6px 14px;
 }
 
 .secondary-button:hover {
@@ -380,7 +380,7 @@ main h3 {
   border-bottom: none;
 }
 
-/* תובנות */
+/* תובנות (שונו לאמונות) */
 .insight-entry {
   background-color: rgba(255,255,255,0.9);
   border: 1px solid #ecf0f1;
@@ -418,17 +418,6 @@ main h3 {
 .insight-input:focus {
   border-color: #3498db;
   outline: none;
-}
-
-.audio-controls {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-audio.audio-player {
-  margin-top: 10px;
-  width: 100%;
 }
 
 /* רספונסיביות */
