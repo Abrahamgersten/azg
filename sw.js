@@ -60,10 +60,12 @@ self.addEventListener('fetch', event => {
         );
       })
       .catch(() => {
-        // fallback
+        // Fallback
         if (event.request.mode === 'navigate') {
           return caches.match('./index.html');
         }
       })
   );
-})
+});
+
+// טיפול בתזכורות (Notification) הוסר
