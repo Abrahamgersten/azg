@@ -330,6 +330,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 beliefs.forEach((belief, idx) => {
                     const li = document.createElement('li');
                     li.textContent = belief.content;
+                    li.style.fontSize = '20px'; /* שיהיה גדול יותר מהתודות */
                     filteredEntriesContainer.appendChild(li);
                 });
             }
@@ -445,7 +446,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // -------------------------------------------------------------------------
-    // הורדת תודות כ-Word
+    // הורדת תודות (Word)
     // -------------------------------------------------------------------------
     downloadThanksWordMenu?.addEventListener('click', (e) => {
         e.preventDefault();
@@ -479,7 +480,7 @@ document.addEventListener('DOMContentLoaded', function () {
             entries.forEach((entry, idx) => {
                 if (entry && entry.text) {
                     docContent += `${idx + 1}. ${entry.text} (קטגוריה: ${entry.category || 'ללא'})\n\n`;
-                    docContent += "\n"; // רווח של 2 שורות
+                    docContent += "\n"; // 2 שורות רווח
                 }
             });
 
@@ -500,7 +501,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // -------------------------------------------------------------------------
-    // אמונות (טבע = נס)
+    // אמונות (טבע = נס) - הוספה, עריכה, מחיקה
     // -------------------------------------------------------------------------
     const beliefsModal = document.getElementById('beliefs-modal');
     const newBeliefContent = document.getElementById('new-belief-content');
@@ -539,11 +540,12 @@ document.addEventListener('DOMContentLoaded', function () {
             const entryDiv = document.createElement('div');
             entryDiv.className = 'belief-entry';
 
+            // פסקת טקסט גדולה
             const contentP = document.createElement('p');
             contentP.textContent = belief.content;
             entryDiv.appendChild(contentP);
 
-            // כפתורים לעריכה ומחיקה
+            // כפתורי עריכה/מחיקה
             const buttonsDiv = document.createElement('div');
             buttonsDiv.style.marginTop = '10px';
             buttonsDiv.style.display = 'flex';
@@ -628,4 +630,4 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
     }
-});
+})
