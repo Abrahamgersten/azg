@@ -394,7 +394,7 @@ main h3 {
   width: 100%;
   height: 80px;
   padding: 10px;
-  font-size: 16px;
+  font-size: 18px;  /* טקסט גדול יותר */
   box-sizing: border-box;
   border: 1px solid #bdc3c7;
   border-radius: 4px;
@@ -409,29 +409,21 @@ main h3 {
   outline: none;
 }
 
-/* רספונסיביות */
-@media (max-width: 768px) {
-  .entries-grid {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  }
+/* גלילה אופקית של האמונות */
+.beliefs-list {
+  display: flex;
+  flex-direction: row;   /* מסדר אופקית */
+  gap: 20px;            /* רווח אופקי בין אמונות */
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 10px 0;
 }
 
-@media (max-width: 480px) {
-  .entries-grid {
-    grid-template-columns: 1fr;
-  }
-
-  header h1 {
-    font-size: 1.5em;
-  }
-
-  .primary-button,
-  .secondary-button {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .modal-content {
-    padding: 20px;
-  }
-}
+.belief-entry p {
+  font-size: 20px;      /* טקסט גדול עוד יותר להצגה ברורה */
+  margin: 0;
+  line-height: 1.5;
+  max-width: 300px;
+  white-space: pre-wrap;
+  text-align: right;
+  
