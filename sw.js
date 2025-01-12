@@ -66,6 +66,4 @@ self.addEventListener('fetch', event => {
         }
       })
   );
-});
-
-// אין יותר התזכורות, הוסר
+})
