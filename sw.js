@@ -1,4 +1,5 @@
-const CACHE_NAME = 'gratitude-app-v8';
+// Service Worker: אחסון אופליין לחלוטין
+const CACHE_NAME = 'gratitude-app-offline-v1';
 const urlsToCache = [
   './',
   './index.html',
@@ -8,15 +9,15 @@ const urlsToCache = [
   './icon-192x192.png',
   './icon-512x512.png',
   './background.jpg',
-  './favicon.ico',
-  'https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap'
+  './favicon.ico'
+  // הסרנו גישה לאינטרנט, אין Hebcal או Google Fonts
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Opened cache');
+        console.log('Opened cache offline');
         return cache.addAll(urlsToCache);
       })
   );
@@ -45,25 +46,13 @@ self.addEventListener('fetch', event => {
         if (response) {
           return response;
         }
-        return fetch(event.request).then(
-          fetchResponse => {
-            if (!fetchResponse || fetchResponse.status !== 200 || fetchResponse.type !== 'basic') {
-              return fetchResponse;
-            }
-            const responseToCache = fetchResponse.clone();
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              });
-            return fetchResponse;
+        // ננסה להביא מהקאש בלבד (לא ניגשים לרשת בכלל)
+        return fetch(event.request).catch(() => {
+          // Fallback
+          if (event.request.mode === 'navigate') {
+            return caches.match('./index.html');
           }
-        );
-      })
-      .catch(() => {
-        // Fallback
-        if (event.request.mode === 'navigate') {
-          return caches.match('./index.html');
-        }
+        });
       })
   );
 })
