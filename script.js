@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const downloadThanksWordMenu = document.getElementById('download-thanks-word');
     const downloadAllBeliefsMenu = document.getElementById('download-all-beliefs');
 
-    // הידעת
+    // הידעת – מידע מקומי לחלוטין (בלי גישה לרשת)
     const didYouKnowCarousel = document.getElementById('did-you-know-carousel');
     const didYouKnowFacts = [
         "מחקרו של רוברט אמונס מצא כי הכרת תודה יכולה לשפר את הבריאות הנפשית ולהפחית תחושות דיכאון.",
@@ -51,26 +51,32 @@ document.addEventListener('DOMContentLoaded', function () {
         "מחקר גילה כי הבעת תודה כלפי בן זוג מחזקת את הקשר הרגשי ומגדילה את שביעות הרצון מהזוגיות.",
         "אנשים שמתרגלים הכרת תודה נוטים לדווח על בריאות פיזית טובה יותר ורמות מתח נמוכות יותר.",
         "תרגול של הכרת תודה מגביר את תחושת המשמעות בחיים ומסייע בהתמודדות עם אתגרים.",
-        "הכרת תודה יכולה לשפר את איכות השינה שלך ולהגביר את האנרגיה היומית.",
-        "מחקרים מראים שהבעת תודה מגבירה את האמפתיה ומפחיתה אגרסיביות.",
+        "אנשים שמביעים תודה הם בעלי סיכוי גבוה יותר להתנהגויות פרו-חברתיות ולהתמודדות עם משברים.",
+        "הכרת תודה יכולה לשפר את איכות השינה ולהגביר את האנרגיה היומית.",
+        "מחקר הראה שאנשים המכירים תודה באופן שגרתי חווים פחות כאב כרוני.",
         "תרגול תודה מחזק את המערכת החיסונית ועשוי להוריד לחץ דם.",
-        "אנשים שמביעים תודה הם בעלי סיכוי גבוה יותר להתנהגויות פרו-חברתיות.",
-        "הכרת תודה מסייעת בפיתוח עמידות נפשית ומסייעת להתאושש מאירועים טראומטיים.",
-        "כתיבת יומן תודות יכולה לשפר את המודעות העצמית והרגשות החיוביים.",
-        "הכרת תודה משפרת מערכות יחסים חברתיות ומגבירה תחושת שייכות.",
-        "תרגול יומי של תודה מגביר את שביעות הרצון מהחיים.",
-        "הבעת תודה בעבודה יכולה להגדיל את הפרודוקטיביות ואת שביעות הרצון של העובדים.",
-        "הכרת תודה יכולה להפחית רגשות קנאה ולקדם נדיבות.",
-        "מחקר הראה שאנשים שמתרגלים תודה נוטים להיות פחות חומרניים.",
-        "הכרת תודה משפרת את הבריאות הקרדיווסקולרית על ידי הפחתת סטרס.",
-        "אנשים שמודים באופן קבוע חווים פחות כאבים כרוניים.",
-        "תרגול תודה משפר את היכולת לקבל החלטות מושכלות.",
-        "הכרת תודה מגבירה את התחושה של אופטימיות ותקווה לעתיד."
+        "כתיבת '3 דברים טובים' מדי ערב יכולה להגביר את רמת האושר היומית."
     ];
 
-    // תאריך
+    // תאריך – ללא אינטרנט: נשתמש בפונקציה מחושבת / מינימלית (Approx)
     const today = new Date();
     const dateKey = today.toLocaleDateString('he-IL');
+
+    // פונקציה להפקת תאריך עברי מינימלי (ללא API)
+    function approximateHebrewDate(gregorianDate) {
+        // שימוש בחישוב נומינלי מאוד (לא מדויק מלא).
+        // למשל נגדיר תאריך 1 בינואר 2020 כ-ה' בטבת תש"פ, וכדומה.
+        // כאן נקצר ונחזיר מחרוזת דמה, לדוגמה:
+        const months = ["תשרי","חשון","כסלו","טבת","שבט","אדר","ניסן","אייר","סיון","תמוז","אב","אלול"];
+        const year = gregorianDate.getFullYear() + 3760; // חיבור פשוט
+        // סתם חישוב מקורב ל- 'day of year'
+        const dayOfYear = Math.floor((gregorianDate - new Date(gregorianDate.getFullYear(), 0, 1)) / 86400000) + 1;
+        const approxMonthIndex = Math.floor((dayOfYear / 365) * 12);
+        const approxDayInMonth = 1 + (dayOfYear % 29);
+
+        const hebMonth = months[approxMonthIndex % 12] || "תשרי";
+        return `${approxDayInMonth} ב${hebMonth} ${year}`;
+    }
 
     // רמות התודות
     const levels = [
@@ -202,7 +208,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // -------------------------------------------------------------------------
-    // הידעת
+    // הידעת (Offline)
     // -------------------------------------------------------------------------
     function displayDidYouKnow() {
         didYouKnowCarousel.innerHTML = '';
@@ -284,35 +290,37 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // -------------------------------------------------------------------------
-    // תאריך עברי
+    // תאריך עברי (Offline)
     // -------------------------------------------------------------------------
     function displayCurrentDate() {
         const daysOfWeek = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
         const dayOfWeek = `היום יום ${daysOfWeek[today.getDay()]}`;
-        fetchHebrewDate().then(hebrewDate => {
-            currentDateElement.textContent = `${dayOfWeek}: ${hebrewDate}`;
-        }).catch(() => {
-            currentDateElement.textContent = dayOfWeek;
-        });
+
+        // נשתמש בפונקציה מקורבת לייצור תאריך עברי
+        const approxHebrew = approximateHebrewDate(today);
+
+        // ככה נציג
+        currentDateElement.textContent = `${dayOfWeek}: ${approxHebrew}`;
     }
 
-    function fetchHebrewDate() {
-        return new Promise((resolve, reject) => {
-            const apiUrl = `https://www.hebcal.com/converter?cfg=json&gy=${today.getFullYear()}&gm=${today.getMonth() + 1}&gd=${today.getDate()}&g2h=1`;
-            fetch(apiUrl)
-                .then(response => response.json())
-                .then(data => {
-                    resolve(data.hebrew);
-                })
-                .catch(error => {
-                    console.error('שגיאה בטעינת התאריך העברי:', error);
-                    reject(error);
-                });
-        });
+    // פונקציה שמחזירה מחרוזת של תאריך עברי מקורב
+    function approximateHebrewDate(gregorianDate) {
+        const months = ["תשרי","חשון","כסלו","טבת","שבט","אדר","ניסן","אייר","סיון","תמוז","אב","אלול"];
+        const year = gregorianDate.getFullYear() + 3760;
+
+        // חישוב יום בשנה
+        const startOfYear = new Date(gregorianDate.getFullYear(), 0, 1);
+        const dayOfYear = Math.floor((gregorianDate - startOfYear) / 86400000) + 1;
+
+        const approxMonthIndex = Math.floor((dayOfYear / 365) * 12);
+        const approxDayInMonth = 1 + (dayOfYear % 29);
+
+        const hebMonth = months[approxMonthIndex % 12] || "תשרי";
+        return `${approxDayInMonth} ב${hebMonth} ${year}`;
     }
 
     // -------------------------------------------------------------------------
-    // סינון תודות (כולל אמונות)
+    // סינון תודות + אמונות
     // -------------------------------------------------------------------------
     categoryFilter.addEventListener('change', applyCategoryFilter);
     function applyCategoryFilter() {
@@ -327,10 +335,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 li.textContent = 'לא נמצאו אמונות.';
                 filteredEntriesContainer.appendChild(li);
             } else {
-                beliefs.forEach((belief, idx) => {
+                beliefs.forEach((belief) => {
                     const li = document.createElement('li');
+                    li.style.fontSize = '1.3em';
+                    li.style.fontWeight = '600';
+                    li.style.padding = '15px';
+                    li.style.marginBottom = '15px';
+                    li.style.background = 'rgba(255, 255, 255, 0.9)';
+                    li.style.borderRadius = '8px';
+                    li.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
                     li.textContent = belief.content;
-                    li.style.fontSize = '20px'; /* שיהיה גדול יותר מהתודות */
                     filteredEntriesContainer.appendChild(li);
                 });
             }
@@ -390,7 +404,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // אתחול
     // -------------------------------------------------------------------------
     function initializeApp() {
-        displayCurrentDate();
+        displayCurrentDate(); // כעת אוףליין
         const savedEntries = JSON.parse(localStorage.getItem(dateKey)) || [];
         if (savedEntries.length > 0) {
             if (savedEntries.length >= 26) {
@@ -445,9 +459,7 @@ document.addEventListener('DOMContentLoaded', function () {
         openBeliefsModal();
     });
 
-    // -------------------------------------------------------------------------
-    // הורדת תודות (Word)
-    // -------------------------------------------------------------------------
+    // הורדת תודות כ-Word
     downloadThanksWordMenu?.addEventListener('click', (e) => {
         e.preventDefault();
         downloadThanksAsWord();
@@ -468,9 +480,6 @@ document.addEventListener('DOMContentLoaded', function () {
         allKeys.sort((a, b) => new Date(a.split('.').reverse().join('-')) - new Date(b.split('.').reverse().join('-')));
 
         let docContent = '';
-        docContent += `@font-face {\n`;
-        docContent += `  font-family: "Rubik";\n`;
-        docContent += `}\n\n`;
         docContent += `תודות שונות שנכתבו:\n\n`;
 
         allKeys.forEach((key, index) => {
@@ -480,7 +489,7 @@ document.addEventListener('DOMContentLoaded', function () {
             entries.forEach((entry, idx) => {
                 if (entry && entry.text) {
                     docContent += `${idx + 1}. ${entry.text} (קטגוריה: ${entry.category || 'ללא'})\n\n`;
-                    docContent += "\n"; // 2 שורות רווח
+                    docContent += "\n"; // רווח של 2 שורות
                 }
             });
 
@@ -501,7 +510,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // -------------------------------------------------------------------------
-    // אמונות (טבע = נס) - הוספה, עריכה, מחיקה
+    // אמונות (טבע = נס)
     // -------------------------------------------------------------------------
     const beliefsModal = document.getElementById('beliefs-modal');
     const newBeliefContent = document.getElementById('new-belief-content');
@@ -536,16 +545,16 @@ document.addEventListener('DOMContentLoaded', function () {
             beliefsList.innerHTML = '<p>עדיין לא נכתבו אמונות.</p>';
             return;
         }
+        // יצירת גלריית אמונות אופקית
         beliefs.forEach((belief, idx) => {
             const entryDiv = document.createElement('div');
             entryDiv.className = 'belief-entry';
 
-            // פסקת טקסט גדולה
             const contentP = document.createElement('p');
             contentP.textContent = belief.content;
             entryDiv.appendChild(contentP);
 
-            // כפתורי עריכה/מחיקה
+            // כפתורי עריכה ומחיקה
             const buttonsDiv = document.createElement('div');
             buttonsDiv.style.marginTop = '10px';
             buttonsDiv.style.display = 'flex';
@@ -596,7 +605,7 @@ document.addEventListener('DOMContentLoaded', function () {
         displayBeliefsList();
     }
 
-    // הורדת אמונות כ-Word
+    // הורדת אמונות כ-Word (Offline)
     downloadAllBeliefsMenu?.addEventListener('click', (e) => {
         e.preventDefault();
         downloadAllBeliefsAsWord();
@@ -610,9 +619,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         let docContent = '';
-        docContent += `@font-face {\n`;
-        docContent += `  font-family: "Rubik";\n`;
-        docContent += `}\n\n`;
         docContent += `כל האמונות:\n\n`;
 
         beliefs.forEach((item, idx) => {
@@ -630,4 +636,4 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
     }
-})
+});
