@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const downloadThanksWordMenu = document.getElementById('download-thanks-word');
     const downloadAllBeliefsMenu = document.getElementById('download-all-beliefs');
 
-    // הידעת – מידע מקומי לחלוטין (בלי גישה לרשת)
+    // הידעת
     const didYouKnowCarousel = document.getElementById('did-you-know-carousel');
     const didYouKnowFacts = [
         "מחקרו של רוברט אמונס מצא כי הכרת תודה יכולה לשפר את הבריאות הנפשית ולהפחית תחושות דיכאון.",
@@ -51,32 +51,26 @@ document.addEventListener('DOMContentLoaded', function () {
         "מחקר גילה כי הבעת תודה כלפי בן זוג מחזקת את הקשר הרגשי ומגדילה את שביעות הרצון מהזוגיות.",
         "אנשים שמתרגלים הכרת תודה נוטים לדווח על בריאות פיזית טובה יותר ורמות מתח נמוכות יותר.",
         "תרגול של הכרת תודה מגביר את תחושת המשמעות בחיים ומסייע בהתמודדות עם אתגרים.",
-        "אנשים שמביעים תודה הם בעלי סיכוי גבוה יותר להתנהגויות פרו-חברתיות ולהתמודדות עם משברים.",
-        "הכרת תודה יכולה לשפר את איכות השינה ולהגביר את האנרגיה היומית.",
-        "מחקר הראה שאנשים המכירים תודה באופן שגרתי חווים פחות כאב כרוני.",
+        "הכרת תודה יכולה לשפר את איכות השינה שלך ולהגביר את האנרגיה היומית.",
+        "מחקרים מראים שהבעת תודה מגבירה את האמפתיה ומפחיתה אגרסיביות.",
         "תרגול תודה מחזק את המערכת החיסונית ועשוי להוריד לחץ דם.",
-        "כתיבת '3 דברים טובים' מדי ערב יכולה להגביר את רמת האושר היומית."
+        "אנשים שמביעים תודה הם בעלי סיכוי גבוה יותר להתנהגויות פרו-חברתיות.",
+        "הכרת תודה מסייעת בפיתוח עמידות נפשית ומסייעת להתאושש מאירועים טראומטיים.",
+        "כתיבת יומן תודות יכולה לשפר את המודעות העצמית והרגשות החיוביים.",
+        "הכרת תודה משפרת מערכות יחסים חברתיות ומגבירה תחושת שייכות.",
+        "תרגול יומי של תודה מגביר את שביעות הרצון מהחיים.",
+        "הבעת תודה בעבודה יכולה להגדיל את הפרודוקטיביות ואת שביעות הרצון של העובדים.",
+        "הכרת תודה יכולה להפחית רגשות קנאה ולקדם נדיבות.",
+        "מחקר הראה שאנשים שמתרגלים תודה נוטים להיות פחות חומרניים.",
+        "הכרת תודה משפרת את הבריאות הקרדיווסקולרית על ידי הפחתת סטרס.",
+        "אנשים שמודים באופן קבוע חווים פחות כאבים כרוניים.",
+        "תרגול תודה משפר את היכולת לקבל החלטות מושכלות.",
+        "הכרת תודה מגבירה את התחושה של אופטימיות ותקווה לעתיד."
     ];
 
-    // תאריך – ללא אינטרנט: נשתמש בפונקציה מחושבת / מינימלית (Approx)
+    // תאריך
     const today = new Date();
     const dateKey = today.toLocaleDateString('he-IL');
-
-    // פונקציה להפקת תאריך עברי מינימלי (ללא API)
-    function approximateHebrewDate(gregorianDate) {
-        // שימוש בחישוב נומינלי מאוד (לא מדויק מלא).
-        // למשל נגדיר תאריך 1 בינואר 2020 כ-ה' בטבת תש"פ, וכדומה.
-        // כאן נקצר ונחזיר מחרוזת דמה, לדוגמה:
-        const months = ["תשרי","חשון","כסלו","טבת","שבט","אדר","ניסן","אייר","סיון","תמוז","אב","אלול"];
-        const year = gregorianDate.getFullYear() + 3760; // חיבור פשוט
-        // סתם חישוב מקורב ל- 'day of year'
-        const dayOfYear = Math.floor((gregorianDate - new Date(gregorianDate.getFullYear(), 0, 1)) / 86400000) + 1;
-        const approxMonthIndex = Math.floor((dayOfYear / 365) * 12);
-        const approxDayInMonth = 1 + (dayOfYear % 29);
-
-        const hebMonth = months[approxMonthIndex % 12] || "תשרי";
-        return `${approxDayInMonth} ב${hebMonth} ${year}`;
-    }
 
     // רמות התודות
     const levels = [
@@ -208,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // -------------------------------------------------------------------------
-    // הידעת (Offline)
+    // הידעת
     // -------------------------------------------------------------------------
     function displayDidYouKnow() {
         didYouKnowCarousel.innerHTML = '';
@@ -290,44 +284,42 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // -------------------------------------------------------------------------
-    // תאריך עברי (Offline)
+    // תאריך עברי
     // -------------------------------------------------------------------------
     function displayCurrentDate() {
         const daysOfWeek = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
         const dayOfWeek = `היום יום ${daysOfWeek[today.getDay()]}`;
-
-        // נשתמש בפונקציה מקורבת לייצור תאריך עברי
-        const approxHebrew = approximateHebrewDate(today);
-
-        // ככה נציג
-        currentDateElement.textContent = `${dayOfWeek}: ${approxHebrew}`;
+        fetchHebrewDate().then(hebrewDate => {
+            currentDateElement.textContent = `${dayOfWeek}: ${hebrewDate}`;
+        }).catch(() => {
+            currentDateElement.textContent = dayOfWeek;
+        });
     }
 
-    // פונקציה שמחזירה מחרוזת של תאריך עברי מקורב
-    function approximateHebrewDate(gregorianDate) {
-        const months = ["תשרי","חשון","כסלו","טבת","שבט","אדר","ניסן","אייר","סיון","תמוז","אב","אלול"];
-        const year = gregorianDate.getFullYear() + 3760;
-
-        // חישוב יום בשנה
-        const startOfYear = new Date(gregorianDate.getFullYear(), 0, 1);
-        const dayOfYear = Math.floor((gregorianDate - startOfYear) / 86400000) + 1;
-
-        const approxMonthIndex = Math.floor((dayOfYear / 365) * 12);
-        const approxDayInMonth = 1 + (dayOfYear % 29);
-
-        const hebMonth = months[approxMonthIndex % 12] || "תשרי";
-        return `${approxDayInMonth} ב${hebMonth} ${year}`;
+    function fetchHebrewDate() {
+        return new Promise((resolve, reject) => {
+            const apiUrl = `https://www.hebcal.com/converter?cfg=json&gy=${today.getFullYear()}&gm=${today.getMonth() + 1}&gd=${today.getDate()}&g2h=1`;
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    resolve(data.hebrew);
+                })
+                .catch(error => {
+                    console.error('שגיאה בטעינת התאריך העברי:', error);
+                    reject(error);
+                });
+        });
     }
 
     // -------------------------------------------------------------------------
-    // סינון תודות + אמונות
+    // סינון תודות (כולל אמונות)
     // -------------------------------------------------------------------------
     categoryFilter.addEventListener('change', applyCategoryFilter);
     function applyCategoryFilter() {
         const selectedCategory = categoryFilter.value;
         filteredEntriesContainer.innerHTML = '';
 
-        // אם המשתמש בחר "אמונות" נציג את האמונות
+        // אם המשתמש בחר "אמונות" נציג את האמונות בגודל גדול, בגלילה אופקית
         if (selectedCategory === 'אמונות') {
             const beliefs = JSON.parse(localStorage.getItem('beliefs')) || [];
             if (!beliefs.length) {
@@ -337,6 +329,7 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 beliefs.forEach((belief) => {
                     const li = document.createElement('li');
+                    // נשתמש בסגנון גדול יותר
                     li.style.fontSize = '1.3em';
                     li.style.fontWeight = '600';
                     li.style.padding = '15px';
@@ -404,7 +397,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // אתחול
     // -------------------------------------------------------------------------
     function initializeApp() {
-        displayCurrentDate(); // כעת אוףליין
+        displayCurrentDate();
         const savedEntries = JSON.parse(localStorage.getItem(dateKey)) || [];
         if (savedEntries.length > 0) {
             if (savedEntries.length >= 26) {
@@ -480,6 +473,9 @@ document.addEventListener('DOMContentLoaded', function () {
         allKeys.sort((a, b) => new Date(a.split('.').reverse().join('-')) - new Date(b.split('.').reverse().join('-')));
 
         let docContent = '';
+        docContent += `@font-face {\n`;
+        docContent += `  font-family: "Rubik";\n`;
+        docContent += `}\n\n`;
         docContent += `תודות שונות שנכתבו:\n\n`;
 
         allKeys.forEach((key, index) => {
@@ -552,6 +548,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const contentP = document.createElement('p');
             contentP.textContent = belief.content;
+            contentP.style.fontSize = '1.3em';
+            contentP.style.fontWeight = '600';
             entryDiv.appendChild(contentP);
 
             // כפתורי עריכה ומחיקה
@@ -605,7 +603,7 @@ document.addEventListener('DOMContentLoaded', function () {
         displayBeliefsList();
     }
 
-    // הורדת אמונות כ-Word (Offline)
+    // הורדת אמונות כ-Word
     downloadAllBeliefsMenu?.addEventListener('click', (e) => {
         e.preventDefault();
         downloadAllBeliefsAsWord();
@@ -619,6 +617,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         let docContent = '';
+        docContent += `@font-face {\n`;
+        docContent += `  font-family: "Rubik";\n`;
+        docContent += `}\n\n`;
         docContent += `כל האמונות:\n\n`;
 
         beliefs.forEach((item, idx) => {
