@@ -6,7 +6,7 @@
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#3498db",
-  "description": "אפליקציה לאתגרים יומיים להבעת תודה והכרת תודה (עובדת גם אופליין).",
+  "description": "אפליקציה לאתגרים יומיים להבעת תודה והכרת תודה.",
   "icons": [
     {
       "src": "icon-192x192.png",
