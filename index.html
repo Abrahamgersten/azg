@@ -5,7 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>יומן תודה</title>
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
-  <!-- הסרנו את השימוש ב-Google Fonts אונליין, כדי שלא יהיה צורך באינטרנט -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  />
   <link rel="stylesheet" href="styles.css" />
   <link rel="manifest" href="manifest.json" />
 </head>
@@ -15,9 +18,16 @@
     <nav class="dropdown-menu">
       <button class="menu-button" aria-label="תפריט">&#9776;</button>
       <div class="dropdown-content">
+        <!-- קישור לימים קודמים -->
         <a href="#" id="view-previous-thanks">תודות מימים קודמים</a>
+        
+        <!-- קישור לקטעי הידעת -->
         <a href="#" id="view-all-did-you-know">כל קטעי 'הידעת?'</a>
+
+        <!-- קישור לניהול האמונות (טבע = נס) -->
         <a href="#" id="view-beliefs">ניהול האמונות שלי</a>
+
+        <!-- הורדת קבצים -->
         <a href="#" id="download-thanks-word">הורד תודות (Word)</a>
         <a href="#" id="download-all-beliefs">הורד אמונות (Word)</a>
       </div>
@@ -63,6 +73,7 @@
             <option value="תודה על דברים מהשגרה היומית"
               >תודה על דברים מהשגרה היומית</option
             >
+            <!-- קטגוריה חדשה לצפייה גם באמונות -->
             <option value="אמונות">אמונות</option>
           </select>
         </div>
@@ -95,13 +106,15 @@
 
   <!-- מודאל לצפייה באמונות (טבע=נס) -->
   <div id="beliefs-modal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content" style="font-family: 'Rubik', sans-serif;">
+      <!-- במקום 'האמונות שלי' => 'טבע = נס' -->
       <header class="modal-header">
         <h3 style="text-align: center; font-size: 1.8em; width:100%">טבע = נס</h3>
         <button class="close-button" aria-label="סגור">×</button>
       </header>
       <div class="modal-body">
         <div id="new-belief" class="belief-entry">
+          <!-- שדה אחד בלבד -->
           <textarea
             id="new-belief-content"
             class="belief-input"
@@ -113,6 +126,7 @@
         <h3 style="text-align: center; font-size: 1.6em; margin-bottom:20px;">
           האמונות שנשמרו
         </h3>
+        <!-- גלריית האמונות תוצג כאן -->
         <div id="beliefs-list" class="beliefs-list"></div>
       </div>
     </div>
@@ -164,7 +178,6 @@
     </div>
   </div>
 
-  <!-- סקריפט ראשי (ללא תלות באינטרנט) -->
   <script src="script.js"></script>
 </body>
-</html>
+    </html>
